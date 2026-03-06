@@ -19,16 +19,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import regisPage from './src/regis';
 import { NavigationContainer } from '@react-navigation/native';
 import menuUtama from './src';
+import home from "./src/home";
+import add from "./src/add";
 
 
 function layoutStack () {
   const Stack = createNativeStackNavigator (); 
     return (
-      <Stack.Navigator initialRouteName='dashboard' screenOptions={{headerShown: false}}>
-        <Stack.Screen name="login" component={LoginPage}/>
-        <Stack.Screen name="register" component={regisPage}/>
-        <Stack.Screen name="dashboard" component={menuUtama}/>
-        
+      <Stack.Navigator initialRouteName='Dashboard' screenOptions={{headerShown: false}}>
+        <Stack.Screen name="Dashboard" component={menuUtama}/>
+        <Stack.Screen name="Home" component={home}/>
+        <Stack.Screen name="Add" component={add}/>
       </Stack.Navigator>
     );
 }
