@@ -1,30 +1,31 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Dimensions, Image, ScrollView } from "react-native";
-import MaterialIcons from "@react-native-vector-icons/material-icons";
+import { View, Text, TouchableOpacity, Dimensions, Image, ScrollView, StyleSheet } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation, NavigationProp } from "@react-navigation/native";;
+import { useNavigation, NavigationProp } from "@react-navigation/native";
+import BottomBar from "../component/Bottombar";
 
 type List = {
-  Home: undefined;
+  add: undefined;
   Dashboard: undefined;
-  Add: undefined;
+  Task: undefined;
 };
 
 export default function MenuUtama() {
-    const insets = useSafeAreaInsets();
+    const insets = useSafeAreaInsets(); 
     const navigation = useNavigation<NavigationProp<List>>();
     return (
 
-        <View style={{ height: '100%', flexDirection: 'column' }}>
+        <View style={{ height: '100%', flexDirection: 'column', backgroundColor: '#ffffff' }}>
             <View style={{ marginHorizontal: 20, flex: 1, marginTop: insets.top }}>
-                <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+                
                     <View style={{ flexDirection: "row", gap: 15, alignItems: "center", marginBottom: 10, marginTop: 10 }}>
 
                         <Image
-                            source={require('./assets/images/01f.png')}
+                            source={require('../assets/images/01f.png')}
                             style={{ width: 50, height: 50, borderRadius: 50, }}
                         />
-
+                        
                         <View>
                             <Text style={{ fontSize: 20, fontWeight: "bold" }}>
                                 Hi, NelsFikar 👋
@@ -44,7 +45,8 @@ export default function MenuUtama() {
                                     justifyContent: "center",
                                     flexDirection: "row",
                                     padding: 20,
-                                    alignItems: "center"
+                                    alignItems: "center",
+                                    
                                 }}
                             >
                                 <View
@@ -169,6 +171,7 @@ export default function MenuUtama() {
                     <Text style={{ fontSize: 20, fontWeight: "bold", marginTop: 25, marginBottom: 25 }}>
                         Recent Task :
                     </Text>
+                    <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
 
                     <View style={{ marginBottom: 20 }}>
                         <View style={{
@@ -304,26 +307,11 @@ export default function MenuUtama() {
                     </View>
                 </ScrollView>
             </View>
-            <View style={{
-                backgroundColor: "#ffffff",
-                borderTopWidth: 1,
-                borderTopColor: "#000000",
-                height: 80,
-                flexDirection: "row",
-                justifyContent: "space-around",
-                alignItems: "center",
-                marginBottom: insets.bottom
-            }}>
-                <TouchableOpacity onPress={()=>navigation.navigate('Dashboard')}>
-                    <MaterialIcons name="home" color="#008cff" size={30} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={()=>navigation.navigate('Add')} >
-                    <MaterialIcons name="add-circle-outline" color="#3c4349" size={60} />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                    <MaterialIcons name="sync" color="#008cff" size={30} />
-                </TouchableOpacity>
-            </View>
+            <BottomBar/>
         </View >
     );
 }
+
+const styles = StyleSheet.create({
+    
+})

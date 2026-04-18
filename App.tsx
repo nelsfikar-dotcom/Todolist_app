@@ -12,15 +12,19 @@ import {
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
 
-import homePage from './src/home';
-import Home from './src/home';
+import homePage from './src/screen/add';
+import Home from './src/screen/add';
 import LoginPage from './src/login';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import regisPage from './src/regis';
 import { NavigationContainer } from '@react-navigation/native';
-import menuUtama from './src';
-import home from "./src/home";
-import add from "./src/add";
+import menuUtama from './src/screen';
+import home from "./src/screen/add";
+import add from "./src/screen/list";
+import List from './src/screen/list';
+import Add from './src/screen/add';
+import detailTask from './src/screen/taskDetail/detailTask';
+import AddTD from './src/screen/taskDetail/addTaskDetail';
 
 
 function layoutStack () {
@@ -28,8 +32,11 @@ function layoutStack () {
     return (
       <Stack.Navigator initialRouteName='Dashboard' screenOptions={{headerShown: false}}>
         <Stack.Screen name="Dashboard" component={menuUtama}/>
-        <Stack.Screen name="Home" component={home}/>
-        <Stack.Screen name="Add" component={add}/>
+        <Stack.Screen name="add" component={Add}/>
+        <Stack.Screen name="Task" component={List}/>
+        <Stack.Screen name="Regis" component={regisPage}/>
+        <Stack.Screen name="detail" component={detailTask}/>
+        <Stack.Screen name="addDetail" component={AddTD}/>
       </Stack.Navigator>
     );
 }
