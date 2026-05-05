@@ -15,6 +15,7 @@ export default function AddTD() {
     const [description, setDescription] = useState('');
     const [time, setTime] = useState(new Date());
     const [show, setShow] = useState(false);
+    const [type, setType] = useState('Normal');
 
     const showMode = (currentMode: string) => {
         setShow(true);
@@ -40,20 +41,24 @@ export default function AddTD() {
                     title: activity,
                     desc: description,
                     time: time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                    type: type
                 }
             });
             setActivity('');
             setDescription('');
             setTime(new Date());
+            setType('Normal');
         }
     };
 
-
+   
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={{ padding: 20 }}>
-
+                <TouchableOpacity style={styles.backBtn}>
+                    <MaterialIcons name="arrow-back" color="#008cff" size={40} />
+                </TouchableOpacity>
                 <Text style={styles.label}>Tambahkan detail tugas anda</Text>
                 <Text style={styles.nama}>Nama detail tugas? :</Text>
                 <TextInput
@@ -95,6 +100,26 @@ export default function AddTD() {
                                 )}
                             </View>
                         )}
+                        <View style={{ flexDirection: "row", marginVertical: 10}}>
+                            <TouchableOpacity onPress={() => setType('Priority')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3}}/>
+                                    <Text> Prioritas </Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setType('Normal')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#007AFF', marginRight: 3}}/>
+                                    <Text> Normal </Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setType('Optional')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#34C759', marginRight: 3}}/>
+                                    <Text> Opsional </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </SafeAreaView>
 
@@ -110,7 +135,7 @@ export default function AddTD() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: '#ffffff', margin: 5 },
-    label: { fontSize: 17, fontWeight: 'bold', marginBottom: 20 },
+    label: { fontSize: 17, fontWeight: 'bold', marginBottom: 20, marginTop: 20 },
     nama: { fontSize: 16, fontWeight: '600', marginBottom: 5 },
     input: {
         borderWidth: 1,
@@ -121,6 +146,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         backgroundColor: '#fff',
     },
+    backBtn: { flexDirection: 'row', alignItems: 'center' },
     textArea: {
         height: 120,
         textAlignVertical: 'top',

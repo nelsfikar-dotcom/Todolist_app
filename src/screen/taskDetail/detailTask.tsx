@@ -11,6 +11,7 @@ type ListParams = {
             title: string;
             desc: string;
             time: string;
+            type: string;
         }
     };
     add: undefined;
@@ -21,24 +22,44 @@ export default function detailTask() {
     const navigation = useNavigation<NavigationProp<any>>();
     const route = useRoute<RouteProp<ListParams, 'detailTasks'>>();
     const [isSelected, setSelection] = useState(false);
+    const [type, setType] = useState('Normal');
 
-    const [detail, setDetail] = useState<{ title: string; desc: string; time: string }[]>([]);
-
+    const [detail, setDetail] = useState<{ title: string; desc: string; time: string; completed: boolean }[]>([]);
+   
     useEffect(() => {
         if (route.params?.newDetail) {
-            const { title, desc, time } = route.params.newDetail;
-
+            const { title, desc, time, type } = route.params.newDetail;
             const newDetailObj = {
-                title: title,
-                desc: desc,
-                time: time,
+                title,
+                desc,
+                time,
+                completed: false, i
+                type: type
             };
-
             setDetail((prev) => [...prev, newDetailObj]);
-
             navigation.setParams({ newDetail: undefined });
         }
     }, [route.params?.newDetail]);
+
+    const toggleTodo = (index: number) => {
+        const newDetails = [...detail];
+        newDetails[index].completed = !newDetails[index].completed;
+        setDetail(newDetails);
+    };
+
+    const getColor = (type) => {
+        switch (type) {
+            case 'Priority':
+                return '#FF3B30';
+            case 'Optional':
+                return '#34C759';
+            case 'Normal':
+                return '#007AFF'
+            default:
+                return '#ccc'
+        }
+    };
+
 
     return (
         <View style={{ flex: 1, backgroundColor: '#f2eded' }}>
@@ -48,9 +69,8 @@ export default function detailTask() {
                         <TouchableOpacity style={{ marginBottom: 5, flexDirection: "row", alignItems: "center" }} onPress={() => navigation.navigate('Task')}>
                             <MaterialIcons name="arrow-back" color="#008cff" size={40} />
                             <Text style={styles.txtButton}>Kembali</Text>
-
                         </TouchableOpacity>
-                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }}>
+                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={() => navigation.navigate('')}>
                             <Text style={styles.txtButton}> Edit </Text>
                             <MaterialIcons name="edit" color="#008cff" size={40} />
                         </TouchableOpacity>
@@ -60,7 +80,7 @@ export default function detailTask() {
                     </Text>
                     <View style={styles.first}>
                         <View style={styles.sec}>
-                            <MaterialIcons name="square" color="#ff0000" size={20} />
+                            <MaterialIcons name="square" color="#FF3B30" size={20} />
                             <Text>Priority</Text>
                         </View>
                         <View style={styles.sec}>
@@ -76,28 +96,52 @@ export default function detailTask() {
 
                 <FlatList
                     data={detail}
-                    renderItem={({ item }) => (
-                        <View style={styles.taskCard}>
-                            <CheckBox
-                                value={isSelected}
-                                onValueChange={setSelection}
-                                tintColors={{ true: "#2196F3", false: "#000000" }}
-                            />
+                    keyExtractor={(_, index) => index.toString()}
+                    renderItem={({ item, index }) => (
+                        <View style={{ flexDirection: 'row', marginBottom: 10 }}>
 
-                            <View style={styles.textContainer}>
-                                <Text style={styles.taskText}>{item.title}</Text>
-                                {item.desc ? (
-                                    <Text style={styles.descText}>{item.desc}</Text>
-                                ) : null}
-                                {item.time ? (
-                                    <Text style={styles.timeText}>⏰ {item.time}</Text>
-                                ) : null}
+                           
+                            <View style={{
+                                width: 4,
+                                backgroundColor: getColor(item.type),
+                                borderTopLeftRadius: 12,
+                                borderBottomLeftRadius: 12
+                            }} />
+
+                            
+                            <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
+                                <CheckBox
+                                    value={item.completed}
+                                    onValueChange={() => toggleTodo(index)}
+                                    tintColors={{ true: "#2196F3", false: "#000000" }}
+                                />
+
+                                <View style={styles.textContainer}>
+                                    <Text style={[
+                                        styles.taskText,
+                                        item.completed && { textDecorationLine: 'line-through', color: '#aaa' }
+                                    ]}>
+                                        {item.title}
+                                    </Text>
+
+                                    {item.desc ? (
+                                        <Text style={[
+                                            styles.descText,
+                                            item.completed && { textDecorationLine: 'line-through' }
+                                        ]}>
+                                            {item.desc}
+                                        </Text>
+                                    ) : null}
+
+                                    {item.time ? (
+                                        <Text style={styles.timeText}>⏰ {item.time}</Text>
+                                    ) : null}
+                                </View>
                             </View>
+
                         </View>
                     )}
-
                 />
-
                 <TouchableOpacity
                     style={styles.fab}
                     onPress={() => navigation.navigate('addDetail')}
@@ -110,7 +154,7 @@ export default function detailTask() {
 };
 
 const styles = StyleSheet.create({
-    top: { fontSize: 20, fontWeight: "bold", marginBottom: 10,  },
+    top: { fontSize: 20, fontWeight: "bold", marginBottom: 10, },
     wrap: { backgroundColor: '#fff', borderRadius: 15, borderBottomWidth: 1, marginBottom: 20, padding: 10 },
     first: { flexDirection: "row", gap: 30, justifyContent: "space-around", marginBottom: 15 },
     sec: { flexDirection: "row", alignItems: "center" },
