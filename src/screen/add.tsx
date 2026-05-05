@@ -16,6 +16,7 @@ export default function Add() {
 
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
+   const [type, setType] = useState('Normal');
 
   const showDatepicker = () => {
     setShow(true);
@@ -34,12 +35,14 @@ export default function Add() {
         newTask: {
           title: activity,
           desc: description,
-          date: date.toISOString()
+          date: date.toISOString(),
+          type: type
         }
       });
       setActivity('');
       setDescription('');
       setDate(new Date());
+      setType('Normal');
     } else {
       Alert.alert("Error", "Tuliskan aktivitas terlebih dahulu!");
     }
@@ -95,6 +98,26 @@ export default function Add() {
               onChange={handleDateChange}
             />
           )}
+          <View style={{ flexDirection: "row", marginVertical: 10}}>
+                            <TouchableOpacity onPress={() => setType('Priority')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3}}/>
+                                    <Text> Prioritas </Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setType('Normal')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#007AFF', marginRight: 3}}/>
+                                    <Text> Normal </Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => setType('Optional')}>
+                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#34C759', marginRight: 3}}/>
+                                    <Text> Opsional </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
         </SafeAreaView>
 
         <TouchableOpacity style={styles.button} onPress={handleSave}>

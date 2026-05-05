@@ -24,7 +24,7 @@ export default function detailTask() {
     const [isSelected, setSelection] = useState(false);
     const [type, setType] = useState('Normal');
 
-    const [detail, setDetail] = useState<{ title: string; desc: string; time: string; completed: boolean }[]>([]);
+    const [detail, setDetail] = useState<{ title: string; desc: string; time: string; completed: boolean, type: string; }[]>([]);
    
     useEffect(() => {
         if (route.params?.newDetail) {
@@ -33,7 +33,7 @@ export default function detailTask() {
                 title,
                 desc,
                 time,
-                completed: false, i
+                completed: false, 
                 type: type
             };
             setDetail((prev) => [...prev, newDetailObj]);
@@ -83,13 +83,13 @@ export default function detailTask() {
                             <MaterialIcons name="square" color="#FF3B30" size={20} />
                             <Text>Priority</Text>
                         </View>
+                         <View style={styles.sec}>
+                            <MaterialIcons name="square" color="#061af5" size={20} />
+                            <Text>Normal</Text>
+                        </View>
                         <View style={styles.sec}>
                             <MaterialIcons name="square" color="#4dc100" size={20} />
                             <Text>Optional</Text>
-                        </View>
-                        <View style={styles.sec}>
-                            <MaterialIcons name="square" color="#061af5" size={20} />
-                            <Text>Normal</Text>
                         </View>
                     </View>
                 </View>
