@@ -26,6 +26,11 @@ export default function List() {
   const [isSelected, setSelection] = useState(false);
   const [type, setType] = useState('Normal');
 
+  const handleDelete = (id: string) => {
+    const filteredTasks = tasks.filter((task) => task.id !== id)
+    setTasks(filteredTasks);
+  };
+
   const [tasks, setTasks] = useState<{ id: string; title: string; desc: string; date: string; type: string; completed: boolean; }[]>([]);
 
   useEffect(() => {
@@ -78,6 +83,20 @@ export default function List() {
           <Text style={styles.title}> Task List :</Text>
 
         </View>
+        <View style={styles.first}>
+          <View style={styles.sec}>
+            <MaterialIcons name="square" color="#FF3B30" size={20} />
+            <Text>Priority</Text>
+          </View>
+          <View style={styles.sec}>
+            <MaterialIcons name="square" color="#061af5" size={20} />
+            <Text>Normal</Text>
+          </View>
+          <View style={styles.sec}>
+            <MaterialIcons name="square" color="#4dc100" size={20} />
+            <Text>Optional</Text>
+          </View>
+        </View>
         {/* <ScrollView> */}
         <FlatList
           data={tasks}
@@ -124,6 +143,15 @@ export default function List() {
                       🗓️{new Date(item.date).toLocaleDateString()}
                     </Text>
                   </View>
+                  <View style={{ justifyContent: "center", marginTop: 10 }}>
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDelete(item.id)}
+                    >
+                      <MaterialIcons name="delete" color="#fff" size={20} />
+                      {/* <Text style={styles.buttonText}> Hapus</Text> */}
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </TouchableOpacity>
 
@@ -162,13 +190,15 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     marginBottom: 10,
     elevation: 2,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
+  first: { flexDirection: "row", gap: 30, justifyContent: "space-around", marginBottom: 20 },
+  sec: { flexDirection: "row", alignItems: "center" },
   textContainer: {
     marginLeft: 10,
     flex: 1,
@@ -199,5 +229,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
+  },
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FF3B30",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
   },
 });

@@ -24,22 +24,28 @@ export default function detailTask() {
     const [isSelected, setSelection] = useState(false);
     const [type, setType] = useState('Normal');
 
-    const [detail, setDetail] = useState<{ title: string; desc: string; time: string; completed: boolean, type: string; }[]>([]);
-   
+    const handleDelete = (id: string) => {
+        const filteredTasks = detail.filter((detail) => detail.id !== id)
+        setDetail(filteredTasks);
+    };
+
+    const [detail, setDetail] = useState<{ id: string; title: string; desc: string; time: string; completed: boolean, type: string; }[]>([]);
+
     useEffect(() => {
         if (route.params?.newDetail) {
             const { title, desc, time, type } = route.params.newDetail;
             const newDetailObj = {
+                id: Date.now().toString(),
                 title,
                 desc,
                 time,
-                completed: false, 
+                completed: false,
                 type: type
             };
             setDetail((prev) => [...prev, newDetailObj]);
             navigation.setParams({ newDetail: undefined });
         }
-    }, [route.params?.newDetail]);
+    }, [route.params?.newDetail, navigation]);
 
     const toggleTodo = (index: number) => {
         const newDetails = [...detail];
@@ -70,20 +76,25 @@ export default function detailTask() {
                             <MaterialIcons name="arrow-back" color="#008cff" size={40} />
                             <Text style={styles.txtButton}>Kembali</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={() => navigation.navigate('')}>
-                            <Text style={styles.txtButton}> Edit </Text>
-                            <MaterialIcons name="edit" color="#008cff" size={40} />
+                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={() => { }}>
+                            <Text style={styles.txtButton}> Simpan </Text>
+                            <MaterialIcons name="check" color="#008cff" size={40} />
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.top}>
                         Task Detail
                     </Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Edit"
+                        placeholderTextColor="#666"
+                    />
                     <View style={styles.first}>
                         <View style={styles.sec}>
                             <MaterialIcons name="square" color="#FF3B30" size={20} />
                             <Text>Priority</Text>
                         </View>
-                         <View style={styles.sec}>
+                        <View style={styles.sec}>
                             <MaterialIcons name="square" color="#061af5" size={20} />
                             <Text>Normal</Text>
                         </View>
@@ -96,19 +107,18 @@ export default function detailTask() {
 
                 <FlatList
                     data={detail}
-                    keyExtractor={(_, index) => index.toString()}
+                    keyExtractor={(item) => item.id}
                     renderItem={({ item, index }) => (
                         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
+                            <View
+                                style={{
+                                    width: 4,
+                                    backgroundColor: getColor(item.type),
+                                    borderTopLeftRadius: 12,
+                                    borderBottomLeftRadius: 12,
+                                }}
+                            />
 
-                           
-                            <View style={{
-                                width: 4,
-                                backgroundColor: getColor(item.type),
-                                borderTopLeftRadius: 12,
-                                borderBottomLeftRadius: 12
-                            }} />
-
-                            
                             <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
                                 <CheckBox
                                     value={item.completed}
@@ -117,18 +127,27 @@ export default function detailTask() {
                                 />
 
                                 <View style={styles.textContainer}>
-                                    <Text style={[
-                                        styles.taskText,
-                                        item.completed && { textDecorationLine: 'line-through', color: '#aaa' }
-                                    ]}>
+                                    <Text
+                                        style={[
+                                            styles.taskText,
+                                            item.completed && {
+                                                textDecorationLine: 'line-through',
+                                                color: '#aaa',
+                                            },
+                                        ]}
+                                    >
                                         {item.title}
                                     </Text>
 
                                     {item.desc ? (
-                                        <Text style={[
-                                            styles.descText,
-                                            item.completed && { textDecorationLine: 'line-through' }
-                                        ]}>
+                                        <Text
+                                            style={[
+                                                styles.descText,
+                                                item.completed && {
+                                                    textDecorationLine: 'line-through',
+                                                },
+                                            ]}
+                                        >
                                             {item.desc}
                                         </Text>
                                     ) : null}
@@ -137,7 +156,20 @@ export default function detailTask() {
                                         <Text style={styles.timeText}>⏰ {item.time}</Text>
                                     ) : null}
                                 </View>
+                                <View style={{ justifyContent: "center", marginTop: 10 }}>
+                                    <TouchableOpacity
+                                        style={styles.deleteButton}
+                                        onPress={() => handleDelete(item.id)}
+                                    >
+                                        <MaterialIcons
+                                            name="delete"
+                                            color="#fff"
+                                            size={20}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
+
 
                         </View>
                     )}
@@ -161,6 +193,16 @@ const styles = StyleSheet.create({
     textContainer: {
         marginLeft: 10,
         flex: 1,
+    },
+    input: {
+        color: '#000',
+        borderColor: '#D0D5DD',
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
+        fontSize: 16,
+        marginBottom: 15,
+        backgroundColor: '#fff',
     },
     txtButton: { fontSize: 17, color: '#008cff' },
     fab: {
@@ -196,11 +238,18 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 12,
         flexDirection: "row",
-        alignItems: "flex-start",
-        marginBottom: 10,
+        alignItems: "center",
         elevation: 2,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
+    },
+    deleteButton: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#FF3B30",
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+        borderRadius: 8,
     },
 })
