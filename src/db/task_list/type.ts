@@ -1,0 +1,31 @@
+export interface task_list {
+    id: number,
+    name: string,
+    desk: string,
+    image: string,
+    status: string,
+    deadline: string,
+    level: string,
+    tasks_id: number,
+    created_at: string,
+    updated_at: string,
+}
+
+export interface createTaskList {
+    name: string,
+    desk: string,
+    image: string,
+    status: string,
+    deadline: string,
+    level: string,
+}     
+
+export interface updateTaskList {
+    id: number;
+    name: string,
+    desk: string,
+    image: string,
+    status: string,
+    deadline: string,
+    level: string,
+}

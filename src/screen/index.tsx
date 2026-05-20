@@ -16,7 +16,7 @@ export default function MenuUtama() {
     const navigation = useNavigation<NavigationProp<List>>();
     return (
 
-        <View style={{ height: '100%', flexDirection: 'column', backgroundColor: '#ffffff' }}>
+        <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#ffffff' }}>
             <View style={{ marginHorizontal: 20, flex: 1, marginTop: insets.top }}>
                 
                     <View style={{ flexDirection: "row", gap: 15, alignItems: "center", marginBottom: 10, marginTop: 10 }}>
@@ -36,8 +36,8 @@ export default function MenuUtama() {
                         </View>
                     </View>
                     <View style={{ gap: 20 }}>
-                        <View style={{ flexDirection: "row", gap: 20 }}>
-                            <TouchableOpacity
+                        <View style={{ flexDirection: "column", gap: 20 }}>
+                            {/* <TouchableOpacity
                                 style={{
                                     flex: 1,
                                     backgroundColor: "#008cff",
@@ -67,17 +67,19 @@ export default function MenuUtama() {
                                         24 Tasks
                                     </Text>
                                 </View>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
 
                             <TouchableOpacity
-                                style={{
-                                    flex: 1,
+                                style={{                                 
                                     backgroundColor: "#f1df3b",
                                     borderRadius: 20,
                                     justifyContent: "center",
                                     padding: 20,
                                     flexDirection: "row",
-                                    alignItems: "center"
+                                    paddingVertical: 10,
+                                    alignItems: "center",
+                                    width: "90%",
+                                    alignSelf: "center"
                                 }}
                             >
                                 <View
@@ -92,25 +94,26 @@ export default function MenuUtama() {
 
                                 <View style={{ marginLeft: 10 }}>
                                     <Text style={{ fontSize: 15, fontWeight: "bold", color: "#000000" }}>
-                                        In Proces
+                                        In Process
                                     </Text>
                                     <Text style={{ color: "#000000" }}>
                                         12 Tasks
                                     </Text>
                                 </View>
                             </TouchableOpacity>
-                        </View>
-                        <View style={{ flexDirection: "row", gap: 20 }}>
-
+                        {/* </View>
+                        <View style={{ flexDirection: "row", gap: 20 }}> */}
                             <TouchableOpacity
-                                style={{
-                                    flex: 1,
+                                style={{                                  
                                     backgroundColor: "#0ea882",
                                     borderRadius: 20,
                                     justifyContent: "center",
                                     flexDirection: "row",
                                     padding: 20,
-                                    alignItems: "center"
+                                    paddingVertical: 10,
+                                    alignItems: "center",
+                                    width: "90%",
+                                    alignSelf: "center"
                                 }}
                             >
                                 <View
@@ -135,13 +138,15 @@ export default function MenuUtama() {
 
                             <TouchableOpacity
                                 style={{
-                                    flex: 1,
                                     backgroundColor: "#e20808",
                                     borderRadius: 20,
                                     justifyContent: "center",
                                     padding: 20,
+                                    paddingVertical: 10,
                                     flexDirection: "row",
-                                    alignItems: "center"
+                                    alignItems: "center",
+                                    width: "90%",
+                                    alignSelf: "center"
                                 }}
                             >
                                 <View
@@ -197,7 +202,7 @@ export default function MenuUtama() {
                                 <Text style={{
                                     fontWeight: "bold", fontSize: 20
                                 }}>Website for To_Do.io</Text>
-                                <Text style={{ fontWeight: "heavy", color: "#aaa7a7a0" }}>Mobile Project </Text>
+                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>Mobile Project </Text>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                     <MaterialIcons name="check-circle" size={15} />
                                     <Text> 15 Tasks </Text>
@@ -230,7 +235,7 @@ export default function MenuUtama() {
                                 <Text style={{
                                     fontWeight: "bold", fontSize: 20
                                 }}>Wish list</Text>
-                                <Text style={{ fontWeight: "heavy", color: "#aaa7a7a0" }}>My self </Text>
+                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>My self </Text>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                     <MaterialIcons name="check-circle" size={15} />
                                     <Text> 18 Tasks </Text>
@@ -263,7 +268,7 @@ export default function MenuUtama() {
                                 <Text style={{
                                     fontWeight: "bold", fontSize: 20
                                 }}>Learning something new</Text>
-                                <Text style={{ fontWeight: "heavy", color: "#aaa7a7a0" }}>apa azaaa</Text>
+                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>apa azaaa</Text>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                     <MaterialIcons name="check-circle" size={15} />
                                     <Text> 10 Tasks </Text>
@@ -296,7 +301,7 @@ export default function MenuUtama() {
                                 <Text style={{
                                     fontWeight: "bold", fontSize: 20
                                 }}>Work Out List</Text>
-                                <Text style={{ fontWeight: "heavy", color: "#aaa7a7a0" }}>Upgrade</Text>
+                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>Upgrade</Text>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                                     <MaterialIcons name="check-circle" size={15} />
                                     <Text> 8 Tasks </Text>

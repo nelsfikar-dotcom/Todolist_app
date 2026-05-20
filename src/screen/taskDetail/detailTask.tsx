@@ -12,7 +12,14 @@ type ListParams = {
             desc: string;
             time: string;
             type: string;
-        }
+        };
+        task?: {
+            id: string;
+            title: string;
+            desc: string;
+            date?: string;
+            type: string;
+        };
     };
     add: undefined;
 };
@@ -24,12 +31,66 @@ export default function detailTask() {
     const [isSelected, setSelection] = useState(false);
     const [type, setType] = useState('Normal');
 
+    const [editID, setEditId] = useState<string | null>(null);
+    const [editTitle, setEditTitle] = useState('');
+    const [editDesc, setEditDesc] = useState('');
+
+    const handleEdit = (item: {
+        id: string;
+        title: string;
+        desc: string;
+    }) => {
+        setEditId(item.id);
+        setEditTitle(item.title);
+        setEditDesc(item.desc);
+    }
+
+    const handleSaveEdit = () => {
+        if (!editID) return;
+
+        const updatedDetail = detail.map((item) =>
+            item.id === editID
+                ? {
+                    ...item,
+                    title: editTitle,
+                    desc: editDesc,
+                }
+                : item
+        );
+
+        setDetail(updatedDetail);
+
+        setEditId(null);
+        setEditTitle('');
+        setEditDesc('');
+
+    };
+
+    const handleSaveTask = () => {
+        if (!route.params?.task) return;
+
+        navigation.navigate('Task', {
+            updatedTask: {
+                id: route.params?.task?.id,
+                title: editTitle,
+                desc: editDesc,
+            }
+        });
+    };
+
     const handleDelete = (id: string) => {
         const filteredTasks = detail.filter((detail) => detail.id !== id)
         setDetail(filteredTasks);
     };
 
     const [detail, setDetail] = useState<{ id: string; title: string; desc: string; time: string; completed: boolean, type: string; }[]>([]);
+
+    useEffect(() => {
+        if (route.params?.task) {
+            setEditTitle(route.params.task.title);
+            setEditDesc(route.params.task.desc);
+        }
+    }, [route.params?.task]);
 
     useEffect(() => {
         if (route.params?.newDetail) {
@@ -73,21 +134,34 @@ export default function detailTask() {
                 <View style={styles.wrap}>
                     <View style={{ justifyContent: "space-between", flexDirection: "row" }}>
                         <TouchableOpacity style={{ marginBottom: 5, flexDirection: "row", alignItems: "center" }} onPress={() => navigation.navigate('Task')}>
-                            <MaterialIcons name="arrow-back" color="#008cff" size={40} />
-                            <Text style={styles.txtButton}>Kembali</Text>
+                            <MaterialIcons name="arrow-back" color="#008cff" size={35} />
+                            {/* <Text style={styles.txtButton}>Kembali</Text> */}
                         </TouchableOpacity>
-                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={() => { }}>
-                            <Text style={styles.txtButton}> Simpan </Text>
-                            <MaterialIcons name="check" color="#008cff" size={40} />
+                        <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={handleSaveTask}>
+                            {/* <Text style={styles.txtButton}> Simpan </Text> */}
+                            <MaterialIcons name="check" color="#008cff" size={35} />
                         </TouchableOpacity>
                     </View>
                     <Text style={styles.top}>
                         Task Detail
                     </Text>
+                    <Text style={styles.txtInput}>
+                        Edit
+                    </Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Edit"
+                        placeholder="Nama"
                         placeholderTextColor="#666"
+                        value={editTitle}
+                        onChangeText={setEditTitle}
+                    />
+
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Deskripsi"
+                        placeholderTextColor="#666"
+                        value={editDesc}
+                        onChangeText={setEditDesc}
                     />
                     <View style={styles.first}>
                         <View style={styles.sec}>
@@ -118,14 +192,12 @@ export default function detailTask() {
                                     borderBottomLeftRadius: 12,
                                 }}
                             />
-
                             <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
                                 <CheckBox
                                     value={item.completed}
                                     onValueChange={() => toggleTodo(index)}
                                     tintColors={{ true: "#2196F3", false: "#000000" }}
                                 />
-
                                 <View style={styles.textContainer}>
                                     <Text
                                         style={[
@@ -169,8 +241,6 @@ export default function detailTask() {
                                     </TouchableOpacity>
                                 </View>
                             </View>
-
-
                         </View>
                     )}
                 />
@@ -186,10 +256,10 @@ export default function detailTask() {
 };
 
 const styles = StyleSheet.create({
-    top: { fontSize: 20, fontWeight: "bold", marginBottom: 10, },
+    top: { fontSize: 20, fontWeight: "bold", marginBottom: 10, color: '#747474', justifyContent: "center" },
     wrap: { backgroundColor: '#fff', borderRadius: 15, borderBottomWidth: 1, marginBottom: 20, padding: 10 },
     first: { flexDirection: "row", gap: 30, justifyContent: "space-around", marginBottom: 15 },
-    sec: { flexDirection: "row", alignItems: "center" },
+    sec: { flexDirection: "column", alignItems: "center" },
     textContainer: {
         marginLeft: 10,
         flex: 1,
@@ -200,9 +270,14 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         paddingHorizontal: 15,
         paddingVertical: 12,
-        fontSize: 16,
+        fontSize: 15,
         marginBottom: 15,
         backgroundColor: '#fff',
+    },
+    txtInput: {
+        color: '#000',
+        fontSize: 17,
+        fontWeight: "semibold",
     },
     txtButton: { fontSize: 17, color: '#008cff' },
     fab: {

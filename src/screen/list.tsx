@@ -6,7 +6,6 @@ import BottomBar from "../component/Bottombar";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import CheckBox from "@react-native-community/checkbox";
 
-
 type ListParams = {
   list: {
     newTask?: {
@@ -14,10 +13,18 @@ type ListParams = {
       desc: string;
       date: string;
       type: string;
-    }
+    };
+    updatedTask?: {   // <- harus updatedTask
+      id: string;
+      title: string;
+      desc: string;
+    };
   };
   add: undefined;
+  
 };
+
+
 
 export default function List() {
   const insets = useSafeAreaInsets();
@@ -52,7 +59,29 @@ export default function List() {
     }
   }, [route.params?.newTask]);
 
-  const toggleTask = (id) => {
+  useEffect(() => {
+    if (route.params?.updatedTask) {
+      const { id, title, desc } = route.params.updatedTask;
+
+      const updatedTasks = tasks.map((item) =>
+        item.id === id
+          ? {
+            ...item,
+            title,
+            desc,
+          }
+          : item
+      );
+
+      setTasks(updatedTasks);
+
+      navigation.setParams({
+        updatedTask: undefined,
+      });
+    }
+  }, [route.params?.updatedTask]);
+
+  const toggleTask = (id: string) => {
     const newTasks = tasks.map((task) =>
       task.id === id
         ? { ...task, completed: !task.completed }
@@ -112,48 +141,54 @@ export default function List() {
                 borderBottomLeftRadius: 12
               }} />
 
-              {/* card */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={{ flex: 1, marginLeft: 5 }}
                 onPress={() => navigation.navigate('detail')}
-              >
-                <View style={styles.taskCard}>
-                  <CheckBox
-                    value={item.completed}
-                    onValueChange={() => toggleTask(item.id)}
-                    tintColors={{ true: "#2196F3", false: "#000000" }}
-                  />
+              > */}
+              <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
+                <CheckBox
+                  value={item.completed}
+                  onValueChange={() => toggleTask(item.id)}
+                  tintColors={{ true: "#2196F3", false: "#000000" }}
+                />
 
-                  <View style={styles.textContainer}>
-                    <Text style={[
-                      styles.taskText,
-                      item.completed && {
-                        textDecorationLine: 'line-through',
-                        color: '#aaa'
-                      }
-                    ]}>
-                      {item.title}
-                    </Text>
+                <View style={styles.textContainer}>
+                  <Text style={[
+                    styles.taskText,
+                    item.completed && {
+                      textDecorationLine: 'line-through',
+                      color: '#aaa'
+                    }
+                  ]}>
+                    {item.title}
+                  </Text>
 
-                    {item.desc ? (
-                      <Text style={styles.descText}>{item.desc}</Text>
-                    ) : null}
+                  {item.desc ? (
+                    <Text style={styles.descText}>{item.desc}</Text>
+                  ) : null}
 
-                    <Text style={styles.dateText}>
-                      🗓️{new Date(item.date).toLocaleDateString()}
-                    </Text>
-                  </View>
-                  <View style={{ justifyContent: "center", marginTop: 10 }}>
-                    <TouchableOpacity
-                      style={styles.deleteButton}
-                      onPress={() => handleDelete(item.id)}
-                    >
-                      <MaterialIcons name="delete" color="#fff" size={20} />
-                      {/* <Text style={styles.buttonText}> Hapus</Text> */}
-                    </TouchableOpacity>
-                  </View>
+                  <Text style={styles.dateText}>
+                    🗓️{new Date(item.date).toLocaleDateString()}
+                  </Text>
                 </View>
-              </TouchableOpacity>
+
+                <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 10 }}>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => navigation.navigate('detail', { task: item })}>
+                    <MaterialIcons name="edit" color="#fff" size={20} />
+
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() => handleDelete(item.id)}
+                  >
+                    <MaterialIcons name="delete" color="#fff" size={20} />
+                    {/* <Text style={styles.buttonText}> Hapus</Text> */}
+                  </TouchableOpacity>
+                </View>
+              </View>
+              {/* </TouchableOpacity> */}
 
             </View>
           )}
@@ -198,7 +233,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   first: { flexDirection: "row", gap: 30, justifyContent: "space-around", marginBottom: 20 },
-  sec: { flexDirection: "row", alignItems: "center" },
+  sec: { flexDirection: "column", alignItems: "center" },
   textContainer: {
     marginLeft: 10,
     flex: 1,
@@ -229,6 +264,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
+  },
+  editButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#008cff",
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    marginRight: 5
   },
   deleteButton: {
     flexDirection: "row",

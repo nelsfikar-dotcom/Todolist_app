@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import CheckBox from "@react-native-community/checkbox";
 
 
 export default function AddTD() {
@@ -56,7 +57,7 @@ export default function AddTD() {
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={{ padding: 20 }}>
-                <TouchableOpacity style={styles.backBtn}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate ('detail')}>
                     <MaterialIcons name="arrow-back" color="#008cff" size={40} />
                 </TouchableOpacity>
                 <Text style={styles.label}>Tambahkan detail tugas anda</Text>
@@ -100,22 +101,37 @@ export default function AddTD() {
                                 )}
                             </View>
                         )}
-                        <View style={{ flexDirection: "row", marginVertical: 10}}>
+                        <View style={{ flexDirection: "column", marginVertical: 10}}>
                             <TouchableOpacity onPress={() => setType('Priority')}>
                                 <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
                                     <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3}}/>
+                                    <CheckBox 
+                                    value={type == 'Priority'}
+                                    onValueChange={() => setType('Priority')}
+                                    tintColors={{true: '#FF3B30', false: '#999'}}
+                                    />
                                     <Text> Prioritas </Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => setType('Normal')}>
                                 <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
                                     <View style={{ width: 15, height: 15, backgroundColor: '#007AFF', marginRight: 3}}/>
+                                    <CheckBox
+                                    value={type == 'Normal'}
+                                    onValueChange={() => setType('Normal')}
+                                    tintColors={{true: '#007AFF', false: '#999'}}
+                                    />
                                     <Text> Normal </Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => setType('Optional')}>
                                 <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
                                     <View style={{ width: 15, height: 15, backgroundColor: '#34C759', marginRight: 3}}/>
+                                    <CheckBox
+                                    value={type == 'Optional'}
+                                    onValueChange={() => setType('Optional')}
+                                    tintColors={{true: '#34C759', false: '#999'}}
+                                    />
                                     <Text> Opsional </Text>
                                 </View>
                             </TouchableOpacity>
