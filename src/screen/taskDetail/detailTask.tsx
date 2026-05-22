@@ -1,33 +1,55 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button, FlatList } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { TouchableOpacity, View, Text, TextInput, StyleSheet,FlatList } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CheckBox from "@react-native-community/checkbox";
+import { RootStackParamList, task_list } from "../../db/task_list/type";
 
-type ListParams = {
-    detailTasks: {
-        newDetail: {
-            title: string;
-            desc: string;
-            time: string;
-            type: string;
-        };
-        task?: {
-            id: string;
-            title: string;
-            desc: string;
-            date?: string;
-            type: string;
-        };
-    };
-    add: undefined;
-};
+
+const dummyTask: task_list[] = [
+    {
+        id: 1,
+        name: "Belajar React Native",
+        desk: "Membuat halaman login dan register",
+        image: "",
+        deadline: "2026-05-25",
+        status: "process",
+        level: "normal",
+        tasks_id: 1,
+        created_at: "2026-05-23T10:00:00",
+        updated_at: "2026-05-23T10:00:00",
+    },
+    {
+        id: 2,
+        name: "Mengerjakan UI Todo",
+        desk: "Menambahkan fitur checkbox",
+        image: "",
+        deadline: "2026-05-27",
+        status: "completed",
+        level: "normal",
+        tasks_id: 1,
+        created_at: "2026-05-23T10:00:00",
+        updated_at: "2026-05-23T10:00:00",
+    },
+    {
+        id: 3,
+        name: "Fix Navigation",
+        desk: "Memperbaiki bug goBack()",
+        image: "",
+        deadline: "2026-05-30",
+        status: "cancel",
+        level: "priority",
+        tasks_id: 2,
+        created_at: "2026-05-23T10:00:00",
+        updated_at: "2026-05-23T10:00:00",
+    },
+];
 
 export default function detailTask() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<NavigationProp<any>>();
-    const route = useRoute<RouteProp<ListParams, 'detailTasks'>>();
+    const route = useRoute<RouteProp<RootStackParamList, 'detail'>>();
     const [isSelected, setSelection] = useState(false);
     const [type, setType] = useState('Normal');
 
@@ -49,11 +71,11 @@ export default function detailTask() {
         if (!editID) return;
 
         const updatedDetail = detail.map((item) =>
-            item.id === editID
+            item.id.toString() === editID
                 ? {
                     ...item,
-                    title: editTitle,
-                    desc: editDesc,
+                    name: editTitle,
+                    desk: editDesc,
                 }
                 : item
         );
@@ -78,49 +100,39 @@ export default function detailTask() {
         });
     };
 
-    const handleDelete = (id: string) => {
-        const filteredTasks = detail.filter((detail) => detail.id !== id)
+    const handleDelete = (id: number) => {
+        const filteredTasks = detail.filter((item) => item.id !== id);
         setDetail(filteredTasks);
     };
 
-    const [detail, setDetail] = useState<{ id: string; title: string; desc: string; time: string; completed: boolean, type: string; }[]>([]);
+    const [detail, setDetail] = useState<task_list[]>(dummyTask);
 
     useEffect(() => {
         if (route.params?.task) {
-            setEditTitle(route.params.task.title);
-            setEditDesc(route.params.task.desc);
+            setEditTitle(route.params.task.name);
+            setEditDesc(route.params.task.desk);
         }
     }, [route.params?.task]);
 
-    useEffect(() => {
-        if (route.params?.newDetail) {
-            const { title, desc, time, type } = route.params.newDetail;
-            const newDetailObj = {
-                id: Date.now().toString(),
-                title,
-                desc,
-                time,
-                completed: false,
-                type: type
-            };
-            setDetail((prev) => [...prev, newDetailObj]);
-            navigation.setParams({ newDetail: undefined });
-        }
-    }, [route.params?.newDetail, navigation]);
 
     const toggleTodo = (index: number) => {
         const newDetails = [...detail];
-        newDetails[index].completed = !newDetails[index].completed;
+
+        newDetails[index].status =
+            newDetails[index].status === "completed"
+                ? "process"
+                : "completed";
+
         setDetail(newDetails);
     };
 
-    const getColor = (type) => {
+    const getColor = (type: any) => {
         switch (type) {
-            case 'Priority':
+            case 'priority':
                 return '#FF3B30';
-            case 'Optional':
+            case 'optional':
                 return '#34C759';
-            case 'Normal':
+            case 'normal':
                 return '#007AFF'
             default:
                 return '#ccc'
@@ -133,7 +145,7 @@ export default function detailTask() {
             <View style={{ marginHorizontal: 10, flex: 1, marginTop: insets.top }}>
                 <View style={styles.wrap}>
                     <View style={{ justifyContent: "space-between", flexDirection: "row" }}>
-                        <TouchableOpacity style={{ marginBottom: 5, flexDirection: "row", alignItems: "center" }} onPress={() => navigation.navigate('Task')}>
+                        <TouchableOpacity style={{ marginBottom: 5, flexDirection: "row", alignItems: "center" }} onPress={() => navigation.goBack()}>
                             <MaterialIcons name="arrow-back" color="#008cff" size={35} />
                             {/* <Text style={styles.txtButton}>Kembali</Text> */}
                         </TouchableOpacity>
@@ -142,12 +154,7 @@ export default function detailTask() {
                             <MaterialIcons name="check" color="#008cff" size={35} />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.top}>
-                        Task Detail
-                    </Text>
-                    <Text style={styles.txtInput}>
-                        Edit
-                    </Text>
+
                     <TextInput
                         style={styles.input}
                         placeholder="Nama"
@@ -181,64 +188,57 @@ export default function detailTask() {
 
                 <FlatList
                     data={detail}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item) => item.id.toString()}
                     renderItem={({ item, index }) => (
                         <View style={{ flexDirection: 'row', marginBottom: 10 }}>
                             <View
                                 style={{
                                     width: 4,
-                                    backgroundColor: getColor(item.type),
+                                    backgroundColor: getColor(item.level),
                                     borderTopLeftRadius: 12,
                                     borderBottomLeftRadius: 12,
                                 }}
                             />
+
                             <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
+
+
                                 <CheckBox
-                                    value={item.completed}
+                                    value={item.status === 'completed'}
                                     onValueChange={() => toggleTodo(index)}
                                     tintColors={{ true: "#2196F3", false: "#000000" }}
                                 />
+
                                 <View style={styles.textContainer}>
+
                                     <Text
                                         style={[
                                             styles.taskText,
-                                            item.completed && {
+                                            item.status === 'completed' && {
                                                 textDecorationLine: 'line-through',
                                                 color: '#aaa',
                                             },
                                         ]}
                                     >
-                                        {item.title}
+                                        {item.name}
                                     </Text>
 
-                                    {item.desc ? (
+                                    {item.desk ? (
                                         <Text
                                             style={[
                                                 styles.descText,
-                                                item.completed && {
+                                                item.status === 'completed' && {
                                                     textDecorationLine: 'line-through',
                                                 },
                                             ]}
                                         >
-                                            {item.desc}
+                                            {item.desk}
                                         </Text>
                                     ) : null}
 
-                                    {item.time ? (
-                                        <Text style={styles.timeText}>⏰ {item.time}</Text>
-                                    ) : null}
-                                </View>
-                                <View style={{ justifyContent: "center", marginTop: 10 }}>
-                                    <TouchableOpacity
-                                        style={styles.deleteButton}
-                                        onPress={() => handleDelete(item.id)}
-                                    >
-                                        <MaterialIcons
-                                            name="delete"
-                                            color="#fff"
-                                            size={20}
-                                        />
-                                    </TouchableOpacity>
+                                    <Text style={styles.timeText}>
+                                        ⏰ {new Date(item.deadline).toLocaleDateString()}
+                                    </Text>
                                 </View>
                             </View>
                         </View>

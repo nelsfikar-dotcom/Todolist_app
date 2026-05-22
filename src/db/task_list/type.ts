@@ -29,3 +29,13 @@ export interface updateTaskList {
     deadline: string,
     level: string,
 }
+
+export type RootStackParamList = {
+    Task: undefined;
+
+    detail: {
+        task: task_list;
+    };
+
+    addDetail: undefined;
+};

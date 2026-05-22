@@ -1,7 +1,7 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button } from "react-native";
+import { TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CheckBox from "@react-native-community/checkbox";
@@ -37,18 +37,7 @@ export default function AddTD() {
 
     const handleSave = () => {
         if (activity.trim().length > 0) {
-            navigation.navigate('detail', {
-                newDetail: {
-                    title: activity,
-                    desc: description,
-                    time: time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                    type: type
-                }
-            });
-            setActivity('');
-            setDescription('');
-            setTime(new Date());
-            setType('Normal');
+           navigation.goBack()
         }
     };
 
@@ -143,7 +132,6 @@ export default function AddTD() {
                     <Text style={styles.buttonText}>Tambahkan detail tugas</Text>
                 </TouchableOpacity>
             </View>
-
 
         </View>
     )

@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Dimensions, Image, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
-import BottomBar from "../component/Bottombar";
+
+import 'react-native-gesture-handler';
 
 type List = {
   add: undefined;
@@ -312,7 +313,6 @@ export default function MenuUtama() {
                     </View>
                 </ScrollView>
             </View>
-            <BottomBar/>
         </View >
     );
 }

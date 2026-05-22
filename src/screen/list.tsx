@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NavigationProp, useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import BottomBar from "../component/Bottombar";
+import { NavigationProp, useNavigation} from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import CheckBox from "@react-native-community/checkbox";
+import { task } from "../db/tasks/type";
 
 type ListParams = {
   list: {
@@ -14,7 +14,7 @@ type ListParams = {
       date: string;
       type: string;
     };
-    updatedTask?: {   // <- harus updatedTask
+    updatedTask?: { 
       id: string;
       title: string;
       desc: string;
@@ -24,79 +24,81 @@ type ListParams = {
   
 };
 
+const dummyTasks: task[] = [
+  {
+    id: 1,
+    name: "Belajar React Native",
+    desk: "Membuat halaman login dan register",
+    deadline: "2026-05-25",
+    status: "process",
+    level: "normal",
+    user_id: 1,
+    created_at: "2026-05-23T10:00:00",
+    updated_at: "2026-05-23T10:00:00",
+  },
+  {
+    id: 2,
+    name: "Mengerjakan UI Todo",
+    desk: "Menambahkan fitur checkbox",
+    deadline: "2026-05-27",
+    status: "completed",
+    level: "normal",
+    user_id: 1,
+    created_at: "2026-05-23T10:00:00",
+    updated_at: "2026-05-23T10:00:00",
+  },
+  {
+    id: 3,
+    name: "Fix Navigation",
+    desk: "Memperbaiki bug goBack()",
+    deadline: "2026-05-30",
+    status: "cancel",
+    level: "priority",
+    user_id: 2,
+    created_at: "2026-05-23T10:00:00",
+    updated_at: "2026-05-23T10:00:00",
+  },
+];
 
 
 export default function List() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<any>>();
-  const route = useRoute<RouteProp<ListParams, 'list'>>();
-  const [isSelected, setSelection] = useState(false);
-  const [type, setType] = useState('Normal');
 
-  const handleDelete = (id: string) => {
-    const filteredTasks = tasks.filter((task) => task.id !== id)
+  const handleDelete = (id: number) => {
+    const filteredTasks = tasks.filter((task) => task.id !== id);
     setTasks(filteredTasks);
   };
 
-  const [tasks, setTasks] = useState<{ id: string; title: string; desc: string; date: string; type: string; completed: boolean; }[]>([]);
+  const [tasks, setTasks] = useState<task[]>(dummyTasks);
 
   useEffect(() => {
-    if (route.params?.newTask) {
-      const { title, desc, date, type } = route.params.newTask;
+    setTasks(dummyTasks);
+  }, []);
 
-      const newTaskObj = {
-        id: Date.now().toString(),
-        title: title,
-        desc: desc,
-        date: date,
-        type: type,
-        completed: false
-      };
-
-      setTasks((prev) => [...prev, newTaskObj]);
-
-      navigation.setParams({ newTask: undefined });
-    }
-  }, [route.params?.newTask]);
-
-  useEffect(() => {
-    if (route.params?.updatedTask) {
-      const { id, title, desc } = route.params.updatedTask;
-
-      const updatedTasks = tasks.map((item) =>
-        item.id === id
-          ? {
-            ...item,
-            title,
-            desc,
-          }
-          : item
-      );
-
-      setTasks(updatedTasks);
-
-      navigation.setParams({
-        updatedTask: undefined,
-      });
-    }
-  }, [route.params?.updatedTask]);
-
-  const toggleTask = (id: string) => {
+  const toggleTask = (id: number) => {
     const newTasks = tasks.map((task) =>
       task.id === id
-        ? { ...task, completed: !task.completed }
+        ? {
+            ...task,
+            status:
+              task.status === 'completed'
+                ? 'process'
+                : 'completed',
+          }
         : task
     );
+
     setTasks(newTasks);
   };
 
-  const getColor = (type) => {
+  const getColor = (type: any) => {
     switch (type) {
-      case 'Priority':
+      case 'priority':
         return '#FF3B30';
-      case 'Optional':
+      case 'optional':
         return '#34C759';
-      case 'Normal':
+      case 'normal':
         return '#007AFF'
       default:
         return '#ccc'
@@ -129,14 +131,14 @@ export default function List() {
         {/* <ScrollView> */}
         <FlatList
           data={tasks}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={{ flexDirection: "row", marginBottom: 10 }}>
 
               {/* garis warna */}
               <View style={{
                 width: 4,
-                backgroundColor: getColor(item.type),
+                backgroundColor: getColor(item.level),
                 borderTopLeftRadius: 12,
                 borderBottomLeftRadius: 12
               }} />
@@ -147,28 +149,27 @@ export default function List() {
               > */}
               <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
                 <CheckBox
-                  value={item.completed}
+                  value={item.status === 'completed'}
                   onValueChange={() => toggleTask(item.id)}
-                  tintColors={{ true: "#2196F3", false: "#000000" }}
                 />
 
                 <View style={styles.textContainer}>
                   <Text style={[
                     styles.taskText,
-                    item.completed && {
+                    item.status == 'completed' && {
                       textDecorationLine: 'line-through',
                       color: '#aaa'
                     }
                   ]}>
-                    {item.title}
+                    {item.name}
                   </Text>
 
-                  {item.desc ? (
-                    <Text style={styles.descText}>{item.desc}</Text>
+                  {item.desk ? (
+                    <Text style={styles.descText}>{item.desk}</Text>
                   ) : null}
 
                   <Text style={styles.dateText}>
-                    🗓️{new Date(item.date).toLocaleDateString()}
+                    🗓️{new Date(item.deadline).toLocaleDateString()}
                   </Text>
                 </View>
 
@@ -202,13 +203,11 @@ export default function List() {
 
         <TouchableOpacity
           style={styles.fab}
-          onPress={() => navigation.navigate('add')}
+          onPress={() => navigation.navigate('Add')}
         >
           <MaterialIcons name="add" color="#008cff" size={40} />
         </TouchableOpacity>
       </View>
-
-      <BottomBar />
     </View>
   );
 }

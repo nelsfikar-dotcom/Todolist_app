@@ -1,7 +1,7 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
-import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button } from "react-native";
+import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Button } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CheckBox from "@react-native-community/checkbox";
@@ -24,7 +24,7 @@ export default function Add() {
     setShow(true);
   };
 
-  const handleDateChange = (event, selectedDate) => {
+  const handleDateChange = (selectedDate: any) => {
     setShow(false);
     if (selectedDate) {
       setDate(selectedDate);
@@ -33,26 +33,14 @@ export default function Add() {
 
   const handleSave = () => {
     if (activity.trim().length > 0) {
-      navigation.navigate('Task', {
-        newTask: {
-          title: activity,
-          desc: description,
-          date: date.toISOString(),
-          type: type
-        }
-      });
-      setActivity('');
-      setDescription('');
-      setDate(new Date());
-      setType('Normal');
+      navigation.goBack()
     } else {
       Alert.alert("Error", "Tuliskan aktivitas terlebih dahulu!");
     }
   };
 
-
-
   return (
+    
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -86,6 +74,7 @@ export default function Add() {
         />
 
         <SafeAreaView >
+          
           <View style={styles.deadLine}>
             <Text style={styles.textDL}>PILIH DEADLINE TO-DO </Text>
             <Button onPress={showDatepicker} title="Tanggal!!!" />
@@ -101,7 +90,8 @@ export default function Add() {
             />
           )}
           <View style={{ flexDirection: "column", marginVertical: 10 }}>
-            <TouchableOpacity onPress={() => setType('Priority')}>
+            <Text  style={styles.nama}>Pilih Tingkat Prioritas</Text>
+            <TouchableOpacity onPress={() => setType('Priority')}>              
               <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
                 <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3 }} />
                 <CheckBox
