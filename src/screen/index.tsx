@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 import 'react-native-gesture-handler';
 
@@ -15,6 +17,34 @@ type List = {
 export default function MenuUtama() {
     const insets = useSafeAreaInsets(); 
     const navigation = useNavigation<NavigationProp<List>>();
+
+    const getUser = async () => {
+        const data = await AsyncStorage.getItem("user");
+
+        if (data) {
+                navigation.navigate("Home")
+            } else {
+                navigation.navigate("Login")
+            }
+
+        if (data) {
+            const  user =  JSON.parse(data);
+            console.log("USER LOGIN=>", user);
+        }
+
+         
+    };
+
+    useEffect(() => {
+        getUser();
+    }, []);
+
+    const checkLogin = async () => {
+            const user = await AsyncStorage.getItem("user");
+    
+            
+        }
+
     return (
 
         <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#ffffff' }}>

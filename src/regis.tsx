@@ -3,6 +3,8 @@ import CheckBox from "@react-native-community/checkbox";
 import { useState } from 'react';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 
+import { auth } from './db/auth/service';
+
 type List = {
     add: undefined;
     Dashboard: undefined;
@@ -21,7 +23,7 @@ export default function RegisterPage() {
 
     const navigation = useNavigation<NavigationProp<List>>();
 
-    const register = () => {
+    const register = async () => {
 
         if (!name || !email || !password || !confirmPassword) {
             Alert.alert("Error", "Semua field wajib diisi");
@@ -38,9 +40,41 @@ export default function RegisterPage() {
             return;
         }
 
-        Alert.alert("Success", "Register berhasil");
+        try {
 
-        navigation.navigate("Login");
+            console.log("DATA REGISTER => ", {
+                name,
+                email,
+                password
+            });
+
+            const response = await auth.regis({
+                name,
+                email,
+                password
+            });
+
+            console.log("REGISTER SUCCESS => ", response);
+
+            Alert.alert("Success", response.message);
+
+            navigation.navigate("Login");
+
+        } catch (e: any) {
+
+            console.log("REGISTER ERROR FULL => ", e);
+
+            console.log("REGISTER ERROR RESPONSE => ", e.response);
+
+            console.log("REGISTER ERROR DATA => ", e.response?.data);
+
+            console.log("REGISTER ERROR MESSAGE => ", e.message);
+
+            Alert.alert(
+                "Error",
+                e.response?.data?.message || e.message || "Register gagal"
+            );
+        }
     };
 
     return (

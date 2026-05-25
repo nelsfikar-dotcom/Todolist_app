@@ -2,6 +2,8 @@ import { Alert, Button, Image, Text, TextInput, View, TouchableOpacity } from 'r
 import CheckBox from "@react-native-community/checkbox";
 import { useState } from 'react';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { auth } from './db/auth/service';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type List = {
     add: undefined;
@@ -16,23 +18,55 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
 
     const navigation = useNavigation<NavigationProp<List>>();
-    const login = () => {
 
+
+
+    const login = async () => {
         if (!email || !password) {
-            Alert.alert("Error", "Email dan password wajib diisi");
+            Alert.alert("Error", "Semua field wajib diisi");
             return;
         }
 
-        if (
-            email === "Fikar123@gmail.com" &&
-            password === "123456"
-        ) {
-            Alert.alert("Success", "Login berhasil");
+       if (!checked) {
+            Alert.alert("Error", "Setujui remember me terlebih dahulu");
+            return;
+       }
 
-            navigation.navigate("Dashboard");
-        } else {
-            Alert.alert("Error", "Email atau password salah");
-        }
+       try {
+            console.log("DATA LOGIN =>", {
+                email,
+                password
+            });
+
+            const response = await auth.login({
+                email,
+                password
+            });
+            
+            console.log(response);
+
+            await AsyncStorage.setItem(
+                "user", JSON.stringify(response.data)
+            );
+
+            console.log("LOGIN SUCCES => ", response);
+
+            Alert.alert("Succes", response.message);
+
+            navigation.navigate("Home");
+
+       } catch (e: any) {
+            console.log("LOGIN ERROR ", e);
+            console.log("LOGIN ERROR RESPONSE", e);
+            console.log("LOGIN ERROR DATA", e.response?.data)
+            console.log("LOGIN ERROR MESSAGE", e.message);
+
+            Alert.alert(
+                "Error",
+                e.response?.data?.message || e.message || "Login gagal"
+            );
+       }
+
     };
 
     return (
