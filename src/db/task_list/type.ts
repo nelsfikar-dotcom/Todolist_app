@@ -11,25 +11,6 @@ export interface task_list {
     updated_at: string,
 }
 
-export interface createTaskList {
-    name: string,
-    desk: string,
-    image: string,
-    status: string,
-    deadline: string,
-    level: string,
-}     
-
-export interface updateTaskList {
-    id: number;
-    name: string,
-    desk: string,
-    image: string,
-    status: string,
-    deadline: string,
-    level: string,
-}
-
 export type RootStackParamList = {
     Task: undefined;
 

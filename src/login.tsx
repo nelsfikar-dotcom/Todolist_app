@@ -1,7 +1,7 @@
 import { Alert, Button, Image, Text, TextInput, View, TouchableOpacity } from 'react-native';
 import CheckBox from "@react-native-community/checkbox";
 import { useState } from 'react';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
 import { auth } from './db/auth/service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
 
             Alert.alert("Succes", response.message);
 
-            navigation.navigate("Home");
+            
 
        } catch (e: any) {
             console.log("LOGIN ERROR ", e);

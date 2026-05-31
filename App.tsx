@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import { AppState } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import detailTask from './src/screen/taskDetail/detailTask';
 import AddTD from './src/screen/taskDetail/addTaskDetail';
 import LoginPage from './src/login';
 import RegisterPage from './src/regis';
+import MenuUtama from './src/screen';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +19,8 @@ function App() {
   const [isLogin, setIsLogin] = useState(false);
 
   const [loading, setLoading] = useState(true);
+
+  const [appState, setAppState] = useState(AppState.currentState);
 
   const checkLogin = async () => {
 
@@ -47,10 +50,31 @@ function App() {
   };
 
   useEffect(() => {
-
     checkLogin();
 
+    const interval = setInterval(() => {
+      checkLogin();
+    }, 3000); // Check setiap 500ms
+
+    return () => clearInterval(interval);
   }, []);
+
+  // Listen untuk perubahan AppState (ketika app kembali ke foreground)
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const handleAppStateChange = (nextAppState: any) => {
+    if (appState.match(/inactive|background/) && nextAppState === 'active') {
+      // App kembali ke foreground, check login status lagi
+      checkLogin();
+    }
+    setAppState(nextAppState);
+  };
 
   if (loading) {
     return null;

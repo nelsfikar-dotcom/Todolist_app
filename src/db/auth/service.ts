@@ -1,15 +1,15 @@
 import { api } from "../api";
 
-import { register, login, apiResponse } from "./type";
+import { register, login, authResponse } from "./type";
 
 export const auth = {
-    async regis( data : register ) : Promise <apiResponse> {
-        const response = await api.post<apiResponse> ('/register',data)
+    async regis( data : register ) : Promise <authResponse> {
+        const response = await api.post<authResponse> ('/register',data)
         return response.data;
     },
 
-    async login( data : login ) : Promise <apiResponse> {
-        const response = await api.post<apiResponse> ('/login', data)
+    async login( data : login ) : Promise <authResponse> {
+        const response = await api.post<authResponse> ('/login', data)
         return response.data;
     }
 }

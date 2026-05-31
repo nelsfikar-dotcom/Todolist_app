@@ -9,9 +9,8 @@ export interface login {
     password: string
 }
 
-export interface apiResponse {
+export interface authResponse {
     succes: boolean,
     message: string,
     data: any[]
-
 }

@@ -1,91 +1,60 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NavigationProp, useNavigation} from "@react-navigation/native";
+import { NavigationProp, useNavigation } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import CheckBox from "@react-native-community/checkbox";
-import { task } from "../db/tasks/type";
-
-type ListParams = {
-  list: {
-    newTask?: {
-      title: string;
-      desc: string;
-      date: string;
-      type: string;
-    };
-    updatedTask?: { 
-      id: string;
-      title: string;
-      desc: string;
-    };
-  };
-  add: undefined;
-  
-};
-
-const dummyTasks: task[] = [
-  {
-    id: 1,
-    name: "Belajar React Native",
-    desk: "Membuat halaman login dan register",
-    deadline: "2026-05-25",
-    status: "process",
-    level: "normal",
-    user_id: 1,
-    created_at: "2026-05-23T10:00:00",
-    updated_at: "2026-05-23T10:00:00",
-  },
-  {
-    id: 2,
-    name: "Mengerjakan UI Todo",
-    desk: "Menambahkan fitur checkbox",
-    deadline: "2026-05-27",
-    status: "completed",
-    level: "normal",
-    user_id: 1,
-    created_at: "2026-05-23T10:00:00",
-    updated_at: "2026-05-23T10:00:00",
-  },
-  {
-    id: 3,
-    name: "Fix Navigation",
-    desk: "Memperbaiki bug goBack()",
-    deadline: "2026-05-30",
-    status: "cancel",
-    level: "priority",
-    user_id: 2,
-    created_at: "2026-05-23T10:00:00",
-    updated_at: "2026-05-23T10:00:00",
-  },
-];
-
+import { Task } from "../db/tasks/type";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { taskService } from "../db/tasks/services";
 
 export default function List() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp<any>>();
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const loadTasks = async () => {
+    try {
+
+      const userString = await AsyncStorage.getItem("user");
+
+      if (!userString) {
+        return;
+      }
+
+      const user = JSON.parse(userString);
+
+      console.log("User Login :", user);
+
+      const data = await taskService.getTaskByUserId(user.id);
+
+      setTasks(data);
+
+    } catch (error) {
+      console.log("Load Task Error :", error);
+    }
+  };
 
   const handleDelete = (id: number) => {
     const filteredTasks = tasks.filter((task) => task.id !== id);
     setTasks(filteredTasks);
   };
 
-  const [tasks, setTasks] = useState<task[]>(dummyTasks);
 
   useEffect(() => {
-    setTasks(dummyTasks);
+    loadTasks();
   }, []);
 
   const toggleTask = (id: number) => {
-    const newTasks = tasks.map((task) =>
+    const newTasks: Task[] = tasks.map((task) =>
       task.id === id
         ? {
-            ...task,
-            status:
-              task.status === 'completed'
-                ? 'process'
-                : 'completed',
-          }
+          ...task,
+          status:
+            task.status === 'completed'
+              ? 'process'
+              : 'completed'
+        }
         : task
     );
 
@@ -135,7 +104,7 @@ export default function List() {
           renderItem={({ item }) => (
             <View style={{ flexDirection: "row", marginBottom: 10 }}>
 
-              {/* garis warna */}
+
               <View style={{
                 width: 4,
                 backgroundColor: getColor(item.level),
