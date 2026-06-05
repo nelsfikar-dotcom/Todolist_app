@@ -1,4 +1,4 @@
-    import { api } from "../api";
+import { api } from "../api";
 import { task_list } from "./type";
 import { ApiResponse } from "../type";
 
@@ -16,7 +16,15 @@ export const taskListService = {
 
     },
 
-    async createTL(taskList: Omit<task_list, 'id' | 'created_at' | 'update_at'>) {
+    async getTaskListByTaskId(tasks_id: number): Promise<task_list[]> {
+        const response = await api.get<ApiResponse<task_list[]>>(
+            `/task_list/task/${tasks_id}`
+        );
+
+        return response.data.data;
+    },
+
+    async createTL(taskList: Omit<task_list, 'id' | 'created_at' | 'updated_at'>) {
         const response = await api.post('/task_list', taskList);
 
         return response.data;
@@ -30,7 +38,7 @@ export const taskListService = {
 
     },
 
-    async deleteTL(id : number) {
+    async deleteTL(id: number) {
         const response = await api.delete(`/task_list/${id}`);
 
         return response.data;

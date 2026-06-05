@@ -2,7 +2,6 @@ export interface task_list {
     id: number,
     name: string,
     desk: string,
-    image: string,
     status: string,
     deadline: string,
     level: string,
@@ -18,5 +17,7 @@ export type RootStackParamList = {
         task: task_list;
     };
 
-    addDetail: undefined;
+    addDetail: {
+        taskID: number;
+    }
 };

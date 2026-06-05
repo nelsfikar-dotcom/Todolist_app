@@ -5,7 +5,8 @@ import { Alert, TouchableOpacity, View, Text, TextInput, StyleSheet, Button } fr
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CheckBox from "@react-native-community/checkbox";
-
+import { taskService } from "../db/tasks/services";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Add() {
@@ -20,27 +21,76 @@ export default function Add() {
   const [show, setShow] = useState(false);
   const [type, setType] = useState('Normal');
 
+
   const showDatepicker = () => {
     setShow(true);
   };
 
-  const handleDateChange = (selectedDate: any) => {
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    console.log("EVENT :", event);
+    console.log("DATE :", selectedDate);
     setShow(false);
+
     if (selectedDate) {
       setDate(selectedDate);
     }
   };
 
-  const handleSave = () => {
-    if (activity.trim().length > 0) {
-      navigation.goBack()
-    } else {
-      Alert.alert("Error", "Tuliskan aktivitas terlebih dahulu!");
+  const getLevel = () => {
+    switch (type) {
+      case "Priority":
+        return "priority";
+
+      case "Optional":
+        return "optional";
+
+      default:
+        return "normal";
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+
+      if (activity.trim().length === 0) {
+        Alert.alert("Error", "Tuliskan aktivitas terlebih dahulu!");
+        return;
+      }
+
+      const userString = await AsyncStorage.getItem("user");
+
+      if (!userString) {
+        Alert.alert("Error", "User belum login");
+        return;
+      }
+
+      const user = JSON.parse(userString);
+
+      const payload = {
+        name: activity,
+        desk: description,
+        deadline: date.toISOString(),
+        status: "process" as const,
+        level: getLevel() as "priority" | "normal" | "optional",
+        user_id: user.id
+      };
+
+      console.log("PAYLOAD :", payload);
+
+      await taskService.createTask(payload);
+
+      Alert.alert("Success", "Task berhasil ditambahkan");
+
+      navigation.goBack();
+
+    } catch (error) {
+      console.log("CREATE TASK ERROR :", error);
+      Alert.alert("Error", "Gagal menyimpan task");
     }
   };
 
   return (
-    
+
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -74,7 +124,7 @@ export default function Add() {
         />
 
         <SafeAreaView >
-          
+
           <View style={styles.deadLine}>
             <Text style={styles.textDL}>PILIH DEADLINE TO-DO </Text>
             <Button onPress={showDatepicker} title="Tanggal!!!" />
@@ -90,8 +140,8 @@ export default function Add() {
             />
           )}
           <View style={{ flexDirection: "column", marginVertical: 10 }}>
-            <Text  style={styles.nama}>Pilih Tingkat Prioritas</Text>
-            <TouchableOpacity onPress={() => setType('Priority')}>              
+            <Text style={styles.nama}>Pilih Tingkat Prioritas</Text>
+            <TouchableOpacity onPress={() => setType('Priority')}>
               <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
                 <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3 }} />
                 <CheckBox

@@ -1,50 +1,12 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
-import { NavigationProp, RouteProp, useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { TouchableOpacity, View, Text, TextInput, StyleSheet,FlatList } from "react-native";
+import { NavigationProp, RouteProp, useNavigation, useRoute, useFocusEffect } from "@react-navigation/native";
+import { useEffect, useState, useCallback } from "react";
+import { TouchableOpacity, View, Text, TextInput, StyleSheet, FlatList, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CheckBox from "@react-native-community/checkbox";
 import { RootStackParamList, task_list } from "../../db/task_list/type";
-
-
-const dummyTask: task_list[] = [
-    {
-        id: 1,
-        name: "Belajar React Native",
-        desk: "Membuat halaman login dan register",
-        image: "",
-        deadline: "2026-05-25",
-        status: "process",
-        level: "normal",
-        tasks_id: 1,
-        created_at: "2026-05-23T10:00:00",
-        updated_at: "2026-05-23T10:00:00",
-    },
-    {
-        id: 2,
-        name: "Mengerjakan UI Todo",
-        desk: "Menambahkan fitur checkbox",
-        image: "",
-        deadline: "2026-05-27",
-        status: "completed",
-        level: "normal",
-        tasks_id: 1,
-        created_at: "2026-05-23T10:00:00",
-        updated_at: "2026-05-23T10:00:00",
-    },
-    {
-        id: 3,
-        name: "Fix Navigation",
-        desk: "Memperbaiki bug goBack()",
-        image: "",
-        deadline: "2026-05-30",
-        status: "cancel",
-        level: "priority",
-        tasks_id: 2,
-        created_at: "2026-05-23T10:00:00",
-        updated_at: "2026-05-23T10:00:00",
-    },
-];
+import { taskService } from "../../db/tasks/services";
+import { taskListService } from "../../db/task_list/services";
 
 export default function detailTask() {
     const insets = useSafeAreaInsets();
@@ -52,6 +14,27 @@ export default function detailTask() {
     const route = useRoute<RouteProp<RootStackParamList, 'detail'>>();
     const [isSelected, setSelection] = useState(false);
     const [type, setType] = useState('Normal');
+
+    const loadTaskList = async () => {
+
+        try {
+
+            const data =
+                await taskListService.getTaskListByTaskId(
+                    route.params.task.id
+                );
+
+            setDetail(data);
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
+    };
+
+    const [originalTitle, setOriginalTitle] = useState('');
+    const [originalDesc, setOriginalDesc] = useState('');
 
     const [editID, setEditId] = useState<string | null>(null);
     const [editTitle, setEditTitle] = useState('');
@@ -65,7 +48,7 @@ export default function detailTask() {
         setEditId(item.id);
         setEditTitle(item.title);
         setEditDesc(item.desc);
-    }
+    };
 
     const handleSaveEdit = () => {
         if (!editID) return;
@@ -88,42 +71,131 @@ export default function detailTask() {
 
     };
 
-    const handleSaveTask = () => {
-        if (!route.params?.task) return;
+    const handleSaveTask = async () => {
 
-        navigation.navigate('Task', {
-            updatedTask: {
-                id: route.params?.task?.id,
-                title: editTitle,
-                desc: editDesc,
-            }
-        });
+        if (!isEdited) {
+            return;
+        }
+
+        try {
+
+            await taskService.updateTask(
+                route.params.task.id,
+                {
+                    name: editTitle,
+                    desk: editDesc,
+                }
+            );
+
+            Alert.alert(
+                "Success",
+                "Task berhasil diperbarui"
+            );
+
+            setOriginalTitle(editTitle);
+            setOriginalDesc(editDesc);
+
+        } catch (error) {
+
+            console.log(error);
+
+            Alert.alert(
+                "Error",
+                "Gagal mengupdate task"
+            );
+        }
     };
 
     const handleDelete = (id: number) => {
-        const filteredTasks = detail.filter((item) => item.id !== id);
-        setDetail(filteredTasks);
+
+        Alert.alert(
+            "Konfirmasi",
+            "Yakin ingin menghapus detail task ini?",
+            [
+                {
+                    text: "Batal",
+                    style: "cancel"
+                },
+                {
+                    text: "Hapus",
+                    style: "destructive",
+                    onPress: async () => {
+
+                        try {
+
+                            await taskListService.deleteTL(id);
+
+                            setDetail(prev =>
+                                prev.filter(item => item.id !== id)
+                            );
+
+                        } catch (error) {
+
+                            console.log(error);
+
+                            Alert.alert(
+                                "Error",
+                                "Gagal menghapus detail task"
+                            );
+                        }
+                    }
+                }
+            ]
+        );
     };
 
-    const [detail, setDetail] = useState<task_list[]>(dummyTask);
+    const [detail, setDetail] = useState<task_list[]>([]);
+
+    const isEdited =
+        editTitle !== originalTitle ||
+        editDesc !== originalDesc;
 
     useEffect(() => {
         if (route.params?.task) {
+
             setEditTitle(route.params.task.name);
             setEditDesc(route.params.task.desk);
+
+            setOriginalTitle(route.params.task.name);
+            setOriginalDesc(route.params.task.desk);
+
+            loadTaskList();
         }
     }, [route.params?.task]);
 
+    useFocusEffect(
+        useCallback(() => {
 
-    const toggleTodo = (index: number) => {
-        const newDetails = [...detail];
+            loadTaskList();
 
-        newDetails[index].status =
-            newDetails[index].status === "completed"
+        }, [])
+    );
+
+    const toggleTodo = async (index: number) => {
+
+        const item = detail[index];
+
+        const newStatus =
+            item.status === "completed"
                 ? "process"
                 : "completed";
 
-        setDetail(newDetails);
+        try {
+
+            await taskListService.updateTL(
+                item.id,
+                {
+                    status: newStatus
+                }
+            );
+
+            await loadTaskList();
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
     };
 
     const getColor = (type: any) => {
@@ -151,7 +223,7 @@ export default function detailTask() {
                         </TouchableOpacity>
                         <TouchableOpacity style={{ flexDirection: "row", alignItems: "center" }} onPress={handleSaveTask}>
                             {/* <Text style={styles.txtButton}> Simpan </Text> */}
-                            <MaterialIcons name="check" color="#008cff" size={35} />
+                            <MaterialIcons name="check" color={isEdited ? "#008cff" : "#999"} size={35} />
                         </TouchableOpacity>
                     </View>
 
@@ -202,7 +274,6 @@ export default function detailTask() {
 
                             <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
 
-
                                 <CheckBox
                                     value={item.status === 'completed'}
                                     onValueChange={() => toggleTodo(index)}
@@ -210,7 +281,6 @@ export default function detailTask() {
                                 />
 
                                 <View style={styles.textContainer}>
-
                                     <Text
                                         style={[
                                             styles.taskText,
@@ -224,14 +294,7 @@ export default function detailTask() {
                                     </Text>
 
                                     {item.desk ? (
-                                        <Text
-                                            style={[
-                                                styles.descText,
-                                                item.status === 'completed' && {
-                                                    textDecorationLine: 'line-through',
-                                                },
-                                            ]}
-                                        >
+                                        <Text style={styles.descText}>
                                             {item.desk}
                                         </Text>
                                     ) : null}
@@ -240,13 +303,25 @@ export default function detailTask() {
                                         ⏰ {new Date(item.deadline).toLocaleDateString()}
                                     </Text>
                                 </View>
+
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => handleDelete(item.id)}
+                                >
+                                    <MaterialIcons
+                                        name="delete"
+                                        color="#fff"
+                                        size={20}
+                                    />
+                                </TouchableOpacity>
+
                             </View>
                         </View>
                     )}
                 />
                 <TouchableOpacity
                     style={styles.fab}
-                    onPress={() => navigation.navigate('addDetail')}
+                    onPress={() => navigation.navigate('addDetail', { taskID: route.params.task.id })}
                 >
                     <MaterialIcons name="add" color="#008cff" size={40} />
                 </TouchableOpacity>

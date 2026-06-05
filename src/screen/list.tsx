@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
@@ -7,6 +7,8 @@ import CheckBox from "@react-native-community/checkbox";
 import { Task } from "../db/tasks/type";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { taskService } from "../db/tasks/services";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 export default function List() {
   const insets = useSafeAreaInsets();
@@ -28,7 +30,13 @@ export default function List() {
 
       const data = await taskService.getTaskByUserId(user.id);
 
-      setTasks(data);
+      
+
+      setTasks(
+        data.filter(
+          task => task.status !== "cancel"
+        )
+      );
 
     } catch (error) {
       console.log("Load Task Error :", error);
@@ -36,31 +44,84 @@ export default function List() {
   };
 
   const handleDelete = (id: number) => {
-    const filteredTasks = tasks.filter((task) => task.id !== id);
-    setTasks(filteredTasks);
-  };
+    Alert.alert(
+      "Konfirmasi",
+      "Yakin ingin menghapus task ini?",
+      [
+        {
+          text: "Batal",
+          style: "cancel"
+        },
+        {
+          text: "Hapus",
+          style: "destructive",
+          onPress: async () => {
+            try {
 
+              await taskService.updateTask(
+                id,
+                {
+                  status: "cancel"
+                }
+              );
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+              loadTasks();
 
-  const toggleTask = (id: number) => {
-    const newTasks: Task[] = tasks.map((task) =>
-      task.id === id
-        ? {
-          ...task,
-          status:
-            task.status === 'completed'
-              ? 'process'
-              : 'completed'
+            } catch (error) {
+
+              console.log(error);
+
+              Alert.alert(
+                "Error",
+                "Gagal menghapus task"
+              );
+            }
+          }
         }
-        : task
+      ]
     );
-
-    setTasks(newTasks);
   };
 
+
+  useFocusEffect(
+    useCallback(() => {
+      loadTasks();
+    }, [])
+  );
+
+  const toggleTask = async (id: number) => {
+
+    try {
+
+      const task = tasks.find(t => t.id === id);
+
+      if (!task) return;
+
+      const newStatus =
+        task.status === "completed"
+          ? "process"
+          : "completed";
+
+      await taskService.updateTask(
+        id,
+        {
+          status: newStatus
+        }
+      );
+
+      loadTasks();
+
+    } catch (error) {
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "Gagal mengubah status task"
+      );
+
+    }
+  };
   const getColor = (type: any) => {
     switch (type) {
       case 'priority':
@@ -97,7 +158,6 @@ export default function List() {
             <Text>Optional</Text>
           </View>
         </View>
-        {/* <ScrollView> */}
         <FlatList
           data={tasks}
           keyExtractor={(item) => item.id.toString()}
@@ -112,14 +172,14 @@ export default function List() {
                 borderBottomLeftRadius: 12
               }} />
 
-              {/* <TouchableOpacity
-                style={{ flex: 1, marginLeft: 5 }}
-                onPress={() => navigation.navigate('detail')}
-              > */}
               <View style={[styles.taskCard, { flex: 1, marginLeft: 5 }]}>
                 <CheckBox
                   value={item.status === 'completed'}
                   onValueChange={() => toggleTask(item.id)}
+                  tintColors={{
+                    true: '#008cff',
+                    false: '#666'
+                  }}
                 />
 
                 <View style={styles.textContainer}>
@@ -168,7 +228,6 @@ export default function List() {
             </Text>
           }
         />
-        {/* </ScrollView> */}
 
         <TouchableOpacity
           style={styles.fab}

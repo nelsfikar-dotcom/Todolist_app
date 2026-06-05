@@ -1,20 +1,34 @@
-import React, { useEffect } from "react";
-import { View, Text, TouchableOpacity, Image, ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import 'react-native-gesture-handler';
+import { Task } from "../db/tasks/type";
+import { taskService } from "../db/tasks/services";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 type List = {
     add: undefined;
     Dashboard: undefined;
     Task: undefined;
+    Home: undefined;
+    Login: undefined;
 };
 
 export default function MenuUtama() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<NavigationProp<List>>();
+
+    const [userName, setUserName] = useState("");
+
+    const [recentTasks, setRecentTasks] = useState<Task[]>([]);
+
+    const [processCount, setProcessCount] = useState(0);
+    const [completedCount, setCompletedCount] = useState(0);
+    const [cancelCount, setCancelCount] = useState(0);
 
     const getUser = async () => {
         const data = await AsyncStorage.getItem("user");
@@ -27,15 +41,72 @@ export default function MenuUtama() {
 
         if (data) {
             const user = JSON.parse(data);
+
             console.log("USER LOGIN=>", user);
+
+            setUserName(user.name);
         }
+    };
+
+    const loadRecentTasks = async () => {
+        try {
+
+            const userString = await AsyncStorage.getItem("user");
+
+            if (!userString) return;
+
+            const user = JSON.parse(userString);
+
+            const data = await taskService.getTaskByUserId(user.id);
 
 
+
+            setProcessCount(
+                data.filter(
+                    task => task.status === "process"
+                ).length
+            );
+
+            setCompletedCount(
+                data.filter(
+                    task => task.status === "completed"
+                ).length
+            );
+
+            setCancelCount(
+                data.filter(
+                    task => task.status === "cancel"
+                ).length
+            );
+
+            const activeTasks = data.filter(
+                task => task.status !== "cancel"
+            );
+
+            const sortedData = activeTasks.sort(
+                (a, b) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime()
+            );
+
+            setRecentTasks(sortedData.slice(0, 5));
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
     };
 
     useEffect(() => {
         getUser();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            loadRecentTasks();
+        }, [])
+    );
 
     const handleLogout = async () => {
         try {
@@ -46,318 +117,189 @@ export default function MenuUtama() {
     };
 
     return (
+        <View style={styles.container}>
+            <View style={[styles.contentWrapper, { marginTop: insets.top }]}>
 
-        <View style={{ flex: 1, flexDirection: 'column', backgroundColor: '#ffffff' }}>
-            <View style={{ marginHorizontal: 20, flex: 1, marginTop: insets.top }}>
-
-                <View style={{ flexDirection: "row", gap: 15, alignItems: "center", marginBottom: 10, marginTop: 10 }}>
-
-                    <Image
-                        source={require('../assets/images/01f.png')}
-                        style={{ width: 50, height: 50, borderRadius: 50, }}
-                    />
-
+                <View style={styles.header}>
                     <View>
-                        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-                            Hi, NelsFikar 👋
+                        <Text style={styles.headerTitle}>
+                            Hi, {userName} 👋
                         </Text>
-                        <Text style={{ color: "#555", fontSize: 10 }}>
+                        <Text style={styles.headerSubtitle}>
                             Aktivitas harian anda menjadi lebih mudah
                         </Text>
                     </View>
-                    <View style={{ alignItems: "center" }}>
-                        <TouchableOpacity
-                            style={{}}
-                            onPress={handleLogout}
-                        >
+                    <View style={styles.logoutWrapper}>
+                        <TouchableOpacity onPress={handleLogout}>
                             <MaterialIcons name="logout" color='#df2929' size={30} />
                         </TouchableOpacity>
-                        <Text style={{ fontSize: 10, color: "#555", }}>
+                        <Text style={styles.logoutText}>
                             Logout
                         </Text>
                     </View>
                 </View>
-                <View style={{ gap: 20 }}>
-                    <View style={{ flexDirection: "column", gap: 20 }}>
-                        {/* <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: "#008cff",
-                                    borderRadius: 20,
-                                    justifyContent: "center",
-                                    flexDirection: "row",
-                                    padding: 20,
-                                    alignItems: "center",
-                                    
-                                }}
-                            >
-                                <View
-                                    style={{
-                                        padding: 10,
-                                        backgroundColor: "rgba(255,255,255,0.2)",
-                                        borderRadius: 50
-                                    }}
-                                >
-                                    <MaterialIcons name="sync" color="#ffffff" size={25} />
-                                </View>
 
-                                <View style={{ marginLeft: 10 }}>
-                                    <Text style={{ fontSize: 15, fontWeight: "bold", color: "#000000" }}>
-                                        On Going
-                                    </Text>
-                                    <Text style={{ color: "#000000" }}>
-                                        24 Tasks
-                                    </Text>
-                                </View>
-                            </TouchableOpacity> */}
 
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: "#f1df3b",
-                                borderRadius: 20,
-                                justifyContent: "center",
-                                padding: 20,
-                                flexDirection: "row",
-                                paddingVertical: 10,
-                                alignItems: "center",
-                                width: "90%",
-                                alignSelf: "center"
-                            }}
-                        >
-                            <View
-                                style={{
-                                    padding: 10,
-                                    backgroundColor: "rgba(255,255,255,0.2)",
-                                    borderRadius: 50
-                                }}
-                            >
+                <View style={styles.taskContainer}>
+                    <View style={styles.taskColumn}>
+
+                        <TouchableOpacity style={[styles.card, styles.cardInProcess]}>
+                            <View style={styles.iconBadge}>
                                 <MaterialIcons name="access-time" color="#ffffff" size={25} />
                             </View>
-
-                            <View style={{ marginLeft: 10 }}>
-                                <Text style={{ fontSize: 15, fontWeight: "bold", color: "#000000" }}>
-                                    In Process
-                                </Text>
-                                <Text style={{ color: "#000000" }}>
-                                    12 Tasks
-                                </Text>
+                            <View style={styles.cardTextWrapper}>
+                                <Text style={styles.cardTitle}>In Process</Text>
+                                <Text style={styles.cardSubtitle}>{processCount} Tasks</Text>
                             </View>
                         </TouchableOpacity>
-                        {/* </View>
-                        <View style={{ flexDirection: "row", gap: 20 }}> */}
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: "#0ea882",
-                                borderRadius: 20,
-                                justifyContent: "center",
-                                flexDirection: "row",
-                                padding: 20,
-                                paddingVertical: 10,
-                                alignItems: "center",
-                                width: "90%",
-                                alignSelf: "center"
-                            }}
-                        >
-                            <View
-                                style={{
-                                    padding: 10,
-                                    backgroundColor: "rgba(255,255,255,0.2)",
-                                    borderRadius: 50
-                                }}
-                            >
+
+                        <TouchableOpacity style={[styles.card, styles.cardCompleted]}>
+                            <View style={styles.iconBadge}>
                                 <MaterialIcons name="check-circle" color="#ffffff" size={25} />
                             </View>
-
-                            <View style={{ marginLeft: 10 }}>
-                                <Text style={{ fontSize: 15, fontWeight: "bold", color: "#000000" }}>
-                                    Completed
-                                </Text>
-                                <Text style={{ color: "#000000" }}>
-                                    42 Tasks
-                                </Text>
+                            <View style={styles.cardTextWrapper}>
+                                <Text style={styles.cardTitle}>Completed</Text>
+                                <Text style={styles.cardSubtitle}>{completedCount} Tasks</Text>
                             </View>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={{
-                                backgroundColor: "#e20808",
-                                borderRadius: 20,
-                                justifyContent: "center",
-                                padding: 20,
-                                paddingVertical: 10,
-                                flexDirection: "row",
-                                alignItems: "center",
-                                width: "90%",
-                                alignSelf: "center"
-                            }}
-                        >
-                            <View
-                                style={{
-                                    padding: 10,
-                                    backgroundColor: "rgba(255,255,255,0.2)",
-                                    borderRadius: 50
-                                }}
-                            >
+                        <TouchableOpacity style={[styles.card, styles.cardCanceled]}>
+                            <View style={styles.iconBadge}>
                                 <MaterialIcons name="cancel" color="#ffffff" size={25} />
                             </View>
-
-                            <View style={{ marginLeft: 10 }}>
-                                <Text style={{ fontSize: 15, fontWeight: "bold", color: "#000000" }}>
-                                    Canceled
-                                </Text>
-                                <Text style={{ color: "#000000" }}>
-                                    8 Tasks
-                                </Text>
+                            <View style={styles.cardTextWrapper}>
+                                <Text style={styles.cardTitle}>Canceled</Text>
+                                <Text style={styles.cardSubtitle}>{cancelCount} Tasks</Text>
                             </View>
                         </TouchableOpacity>
+
                     </View>
-
-
                 </View>
 
-                <Text style={{ fontSize: 20, fontWeight: "bold", marginTop: 25, marginBottom: 25 }}>
+                <Text style={styles.sectionTitle}>
                     Recent Task :
                 </Text>
-                <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
 
-                    <View style={{ marginBottom: 20 }}>
-                        <View style={{
-                            position: "absolute",
-                            bottom: -5,
-                            left: 10,
-                            right: 10,
-                            height: 20,
-                            backgroundColor: "black",
-                            borderRadius: 20,
-                        }} />
-                        <TouchableOpacity
-                            activeOpacity={1}
+                <ScrollView>
+                    {recentTasks.map((task) => (
+                        <View
+                            key={task.id}
                             style={{
-                                backgroundColor: "#e8e6e6",
-                                borderRadius: 20,
-                                borderColor: "#000000",
-                                borderWidth: 1,
-                                padding: 15
+                                backgroundColor: "#fff",
+                                padding: 15,
+                                borderRadius: 12,
+                                marginBottom: 10,
+                                elevation: 2,
                             }}
                         >
-                            <View>
-                                <Text style={{
-                                    fontWeight: "bold", fontSize: 20
-                                }}>Website for To_Do.io</Text>
-                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>Mobile Project </Text>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <MaterialIcons name="check-circle" size={15} />
-                                    <Text> 15 Tasks </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
+                            <Text
+                                style={{
+                                    fontWeight: "bold",
+                                    fontSize: 16
+                                }}
+                            >
+                                {task.name}
+                            </Text>
 
-                    </View>
-                    <View style={{ marginBottom: 20 }}>
-                        <View style={{
-                            position: "absolute",
-                            bottom: -5,
-                            left: 10,
-                            right: 10,
-                            height: 20,
-                            backgroundColor: "black",
-                            borderRadius: 20,
-                        }} />
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            style={{
-                                backgroundColor: "#e8e6e6",
-                                borderRadius: 20,
-                                borderColor: "#000000",
-                                borderWidth: 1,
-                                padding: 15
-                            }}
-                        >
-                            <View>
-                                <Text style={{
-                                    fontWeight: "bold", fontSize: 20
-                                }}>Wish list</Text>
-                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>My self </Text>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <MaterialIcons name="check-circle" size={15} />
-                                    <Text> 18 Tasks </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
+                            <Text>
+                                {task.desk}
+                            </Text>
 
-                    </View>
-                    <View style={{ marginBottom: 20 }}>
-                        <View style={{
-                            position: "absolute",
-                            bottom: -5,
-                            left: 10,
-                            right: 10,
-                            height: 20,
-                            backgroundColor: "black",
-                            borderRadius: 20,
-                        }} />
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            style={{
-                                backgroundColor: "#e8e6e6",
-                                borderRadius: 20,
-                                borderColor: "#000000",
-                                borderWidth: 1,
-                                padding: 15
-                            }}
-                        >
-                            <View>
-                                <Text style={{
-                                    fontWeight: "bold", fontSize: 20
-                                }}>Learning something new</Text>
-                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>apa azaaa</Text>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <MaterialIcons name="check-circle" size={15} />
-                                    <Text> 10 Tasks </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-
-                    </View>
-                    <View style={{ marginBottom: 20 }}>
-                        <View style={{
-                            position: "absolute",
-                            bottom: -5,
-                            left: 10,
-                            right: 10,
-                            height: 20,
-                            backgroundColor: "black",
-                            borderRadius: 20,
-                        }} />
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            style={{
-                                backgroundColor: "#e8e6e6",
-                                borderRadius: 20,
-                                borderColor: "#000000",
-                                borderWidth: 1,
-                                padding: 15
-                            }}
-                        >
-                            <View>
-                                <Text style={{
-                                    fontWeight: "bold", fontSize: 20
-                                }}>Work Out List</Text>
-                                <Text style={{ fontWeight: "500", color: "#aaa7a7a0" }}>Upgrade</Text>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <MaterialIcons name="check-circle" size={15} />
-                                    <Text> 8 Tasks </Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-
-                    </View>
+                            <Text
+                                style={{
+                                    color: "#008cff",
+                                    marginTop: 5
+                                }}
+                            >
+                                🗓️ {new Date(task.updated_at).toLocaleDateString()}
+                            </Text>
+                        </View>
+                    ))}
                 </ScrollView>
             </View>
-        </View >
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-
-})
+    container: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: '#ffffff',
+    },
+    contentWrapper: {
+        marginHorizontal: 20,
+        flex: 1,
+    },
+    header: {
+        flexDirection: "row",
+        gap: 15,
+        alignItems: "center",
+        justifyContent: "space-between", 
+        marginBottom: 10,
+        marginTop: 10,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    headerSubtitle: {
+        color: "#555",
+        fontSize: 10,
+    },
+    logoutWrapper: {
+        alignItems: "center",
+    },
+    logoutText: {
+        fontSize: 10,
+        color: "#555",
+    },
+    taskContainer: {
+        gap: 20,
+    },
+    taskColumn: {
+        flexDirection: "column",
+        gap: 20,
+    },
+    card: {
+        borderRadius: 20,
+        justifyContent: "center",
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        width: "100%", 
+    },
+    cardInProcess: {
+        backgroundColor: "#f1df3b",
+    },
+    cardCompleted: {
+        backgroundColor: "#0ea882",
+    },
+    cardCanceled: {
+        backgroundColor: "#e20808",
+    },
+    iconBadge: {
+        padding: 10,
+        backgroundColor: "rgba(255,255,255,0.2)",
+        borderRadius: 50,
+    },
+    cardTextWrapper: {
+        flex: 1, 
+        marginLeft: 10,
+    },
+    cardTitle: {
+        fontSize: 15,
+        fontWeight: "bold",
+        color: "#000000",
+    },
+    cardSubtitle: {
+        color: "#000000",
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        marginTop: 25,
+        marginBottom: 25,
+    },
+});

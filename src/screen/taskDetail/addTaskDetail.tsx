@@ -1,16 +1,21 @@
 import MaterialIcons from "@react-native-vector-icons/material-icons";
-import { NavigationProp, useNavigation } from "@react-navigation/native";
+import { NavigationProp, useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useState } from "react";
 import { TouchableOpacity, View, Text, TextInput, StyleSheet, Platform, Button } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import CheckBox from "@react-native-community/checkbox";
+import { taskListService } from "../../db/task_list/services";
+import { RootStackParamList } from "../../db/task_list/type";
+import { Alert } from "react-native";
 
 
 export default function AddTD() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation<NavigationProp<any>>();
-    const [isSelected, setSelection] = useState(false);
+    const Navigation = useNavigation<NavigationProp<any>>();
+
+    const Route = useRoute<RouteProp<RootStackParamList, 'addDetail'>>();
 
     const [activity, setActivity] = useState('');
     const [description, setDescription] = useState('');
@@ -21,6 +26,8 @@ export default function AddTD() {
     const showMode = (currentMode: string) => {
         setShow(true);
     }
+
+    const route = useRoute<RouteProp<RootStackParamList, 'addDetail'>>();
 
     const showTimepicker = () => {
         showMode('time');
@@ -35,18 +42,51 @@ export default function AddTD() {
         }
     }
 
-    const handleSave = () => {
-        if (activity.trim().length > 0) {
-           navigation.goBack()
+    const handleSave = async () => {
+
+        if (!activity.trim()) {
+            Alert.alert("Error", "Nama detail tugas wajib diisi");
+            return;
+        }
+
+        try {
+
+            await taskListService.createTL({
+                name: activity,
+                desk: description,
+                status: "process",
+                deadline: time.toISOString().split('T')[0],
+                level: type.toLowerCase() as
+                    'priority'
+                    | 'normal'
+                    | 'optional',
+                tasks_id: route.params.taskID
+            });
+
+            Alert.alert(
+                "Success",
+                "Detail task berhasil ditambahkan"
+            );
+
+            navigation.goBack();
+
+        } catch (error) {
+
+            console.log(error);
+
+            Alert.alert(
+                "Error",
+                "Gagal menambahkan detail task"
+            );
         }
     };
 
-   
+
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
             <View style={{ padding: 20 }}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.navigate ('detail')}>
+                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
                     <MaterialIcons name="arrow-back" color="#008cff" size={40} />
                 </TouchableOpacity>
                 <Text style={styles.label}>Tambahkan detail tugas anda</Text>
@@ -90,36 +130,36 @@ export default function AddTD() {
                                 )}
                             </View>
                         )}
-                        <View style={{ flexDirection: "column", marginVertical: 10}}>
+                        <View style={{ flexDirection: "column", marginVertical: 10 }}>
                             <TouchableOpacity onPress={() => setType('Priority')}>
-                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
-                                    <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3}}/>
-                                    <CheckBox 
-                                    value={type == 'Priority'}
-                                    onValueChange={() => setType('Priority')}
-                                    tintColors={{true: '#FF3B30', false: '#999'}}
+                                <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#FF3B30', marginRight: 3 }} />
+                                    <CheckBox
+                                        value={type == 'Priority'}
+                                        onValueChange={() => setType('Priority')}
+                                        tintColors={{ true: '#FF3B30', false: '#999' }}
                                     />
                                     <Text> Prioritas </Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => setType('Normal')}>
-                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
-                                    <View style={{ width: 15, height: 15, backgroundColor: '#007AFF', marginRight: 3}}/>
+                                <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#007AFF', marginRight: 3 }} />
                                     <CheckBox
-                                    value={type == 'Normal'}
-                                    onValueChange={() => setType('Normal')}
-                                    tintColors={{true: '#007AFF', false: '#999'}}
+                                        value={type == 'Normal'}
+                                        onValueChange={() => setType('Normal')}
+                                        tintColors={{ true: '#007AFF', false: '#999' }}
                                     />
                                     <Text> Normal </Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={() => setType('Optional')}>
-                                <View style={{flexDirection: "row", alignItems:"center", marginRight: 15}}>
-                                    <View style={{ width: 15, height: 15, backgroundColor: '#34C759', marginRight: 3}}/>
+                                <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+                                    <View style={{ width: 15, height: 15, backgroundColor: '#34C759', marginRight: 3 }} />
                                     <CheckBox
-                                    value={type == 'Optional'}
-                                    onValueChange={() => setType('Optional')}
-                                    tintColors={{true: '#34C759', false: '#999'}}
+                                        value={type == 'Optional'}
+                                        onValueChange={() => setType('Optional')}
+                                        tintColors={{ true: '#34C759', false: '#999' }}
                                     />
                                     <Text> Opsional </Text>
                                 </View>
@@ -132,7 +172,6 @@ export default function AddTD() {
                     <Text style={styles.buttonText}>Tambahkan detail tugas</Text>
                 </TouchableOpacity>
             </View>
-
         </View>
     )
 };

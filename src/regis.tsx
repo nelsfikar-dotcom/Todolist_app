@@ -223,10 +223,6 @@ export default function RegisterPage() {
                 </Text>
             </Text>
 
-            <Text style={{ color: '#0750ef', marginTop: 15 }}>
-                Learn more
-            </Text>
-
         </View>
     );
 }

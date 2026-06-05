@@ -1,7 +1,7 @@
 import { Alert, Button, Image, Text, TextInput, View, TouchableOpacity } from 'react-native';
 import CheckBox from "@react-native-community/checkbox";
 import { useState } from 'react';
-import { useNavigation, NavigationProp, CommonActions } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { auth } from './db/auth/service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,7 +28,7 @@ export default function LoginPage() {
         }
 
        if (!checked) {
-            Alert.alert("Error", "Setujui remember me terlebih dahulu");
+            Alert.alert("Error", "Setujui Remember me terlebih dahulu");
             return;
        }
 
@@ -110,13 +110,12 @@ export default function LoginPage() {
                 onChangeText={setPassword}
             />
 
-            <View style={{ flexDirection: 'row', alignItems:'center' , gap: 10, marginBottom: 13 }}>
+            <View style={{ flexDirection: 'row', alignItems:'center' ,alignSelf: 'flex-start' , gap: 10, marginBottom: 13 }}>
                 <CheckBox
                     value={checked}
                     onValueChange={setChecked}
                     tintColors={{ true: '#007AFF', false: '#999' }} />
                 <Text> Remember me</Text>
-                <Text style={{ color: '#0750ef' }}> Forgot Password ?</Text>
             </View>
             <View style={{ width: '100%' }}>
 
@@ -135,14 +134,7 @@ export default function LoginPage() {
                         Login
                     </Text>
                 </TouchableOpacity>
-            </View>
-            <Text style={{ fontWeight: 'bold', marginBottom: 10 }} >Or With</Text>
-            <View style={{ width: '100%', marginBottom: 10 }}>
-                <Button title='Continue with Google'></Button>
-            </View>
-            <View style={{ width: '100%', marginBottom: 0, }}>
-                <Button title='Continue with Facebook'></Button>
-            </View>
+            </View>            
             <Text style={{ marginTop: 120 }}>
                 Don't have an account ?
 
@@ -153,7 +145,6 @@ export default function LoginPage() {
                     {" "}Sign Up
                 </Text>
             </Text>
-            <Text style={{ color: '#0750ef', marginTop: 10 }}>Learn more</Text>
         </View>
     );
 }
