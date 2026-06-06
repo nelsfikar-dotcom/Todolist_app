@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { auth } from './db/auth/service';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from './db/api';
 
 type List = {
     add: undefined;
@@ -27,22 +28,29 @@ export default function LoginPage() {
             return;
         }
 
-       if (!checked) {
+        if (!checked) {
             Alert.alert("Error", "Setujui Remember me terlebih dahulu");
             return;
-       }
+        }
 
-       try {
+        try {
             console.log("DATA LOGIN =>", {
                 email,
                 password
             });
 
+            console.log("SEBELUM TEST");
+
+            const test = await api.get('/');
+
+            console.log("SESUDAH TEST");
+            console.log("TEST API =", test.data);
+
             const response = await auth.login({
                 email,
                 password
             });
-            
+
             console.log(response);
 
             await AsyncStorage.setItem(
@@ -53,9 +61,9 @@ export default function LoginPage() {
 
             Alert.alert("Succes", response.message);
 
-            
 
-       } catch (e: any) {
+
+        } catch (e: any) {
             console.log("LOGIN ERROR ", e);
             console.log("LOGIN ERROR RESPONSE", e);
             console.log("LOGIN ERROR DATA", e.response?.data)
@@ -65,7 +73,7 @@ export default function LoginPage() {
                 "Error",
                 e.response?.data?.message || e.message || "Login gagal"
             );
-       }
+        }
 
     };
 
@@ -110,7 +118,7 @@ export default function LoginPage() {
                 onChangeText={setPassword}
             />
 
-            <View style={{ flexDirection: 'row', alignItems:'center' ,alignSelf: 'flex-start' , gap: 10, marginBottom: 13 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 10, marginBottom: 13 }}>
                 <CheckBox
                     value={checked}
                     onValueChange={setChecked}
@@ -134,7 +142,7 @@ export default function LoginPage() {
                         Login
                     </Text>
                 </TouchableOpacity>
-            </View>            
+            </View>
             <Text style={{ marginTop: 120 }}>
                 Don't have an account ?
 

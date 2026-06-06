@@ -1,5 +1,8 @@
 import axios from "axios";
 
+console.log("BASE URL =", "http://192.168.1.52:3000");
+
 export const api = axios.create({
-    baseURL: process.env.EXPO_PUBLIC_BASE_URL || "http://192.168.1.38:3000"
-})
+    baseURL: "http://192.168.1.52:3000",
+    timeout: 10000,
+});

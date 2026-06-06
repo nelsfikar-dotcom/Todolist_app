@@ -45,7 +45,7 @@ react {
 
     /* Hermes Commands */
     //   The hermes compiler command to run. By default it is 'hermesc'
-    // hermesCommand = "$rootDir/my-custom-hermesc/bin/hermesc"
+    hermesCommand = "${rootDir}/../node_modules/react-native/sdks/hermesc/win64-bin/hermesc"
     //
     //   The list of flags to pass to the Hermes compiler. By default is "-O", "-output-source-map"
     // hermesFlags = ["-O", "-output-source-map"]
@@ -117,3 +117,19 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+// // Workaround for react-native-worklets Gradle 9.0.0 compatibility
+// tasks.withType(com.android.build.gradle.tasks.MergeDexTask).forEach {
+//     it.doNotTrackState("Gradle state tracking issue with native builds")
+// }
+// gradle.projectsEvaluated {
+//     tasks.forEach { task ->
+//         if (task.name.contains('CMake')) {
+//             try {
+//                 task.doNotTrackState("Gradle state tracking issue with native builds")
+//             } catch (Exception e) {
+//                 // Task doesn't support doNotTrackState
+//             }
+//         }
+//     }
+// }
